@@ -1,7 +1,79 @@
 #include "mphhc/core.hpp"
+#include <algorithm>
+#include <cassert>
 
 namespace mphhc {
-    std::string get_version() { return "0.1.0"; }
-    int add(int a, int b) { return a + b; }
+std::string get_version() { return "0.1.0"; }
+int add(int a, int b) { return a + b; }
+
+boundary_matrix::boundary_matrix(int maxdim):
+    columns_(maxdim + 1),
+    local_to_global_index_(maxdim + 1)
+{
+}
+
+index boundary_matrix::add_dim_col(int dim, column&& col) {
+  index new_index = global_to_local_index_.size();
+  index_info new_local_index = { dim, static_cast<index>(columns_[dim].size()) };
+    
+  auto& new_column = columns_[dim].emplace_back(col);
+  std::sort(new_column.begin(), new_column.end());
+
+  local_to_global_index_[dim].push_back(new_index);
+  global_to_local_index_.push_back(new_local_index);
+
+  return new_index;
+}
+
+index boundary_matrix::add_dim_col(int dim, const column& col) {
+  column copied_col(col);
+  return add_dim_col(dim, std::move(copied_col));
+}
+
+int boundary_matrix::num_simplices() const {
+  int sum = 0;
+  for (const auto& v: columns_) {
+    sum += v.size();
+  }
+  return sum;
+}
+
+int bit_tree_column::compute_height(int num_index) {
+  int64_t s;
+  for (int h = 1, s = 64; h <= 5; ++h) {
+    if (num_index <= s)
+      return h;
+    s *= 64;
+  }
+  return -1;
+}
+
+int bit_tree_column::compute_data_size(int height, int num_level) {
+  assert(height >= 1 && height <= 6);
+  static int node_size[6] = {
+    0,
+    1,
+    1 + (1<<6),
+    1 + (1<<6) + (1<<12),
+    1 + (1<<6) + (1<<12) + (1<<18),
+    1 + (1<<6) + (1<<12) + (1<<18) + (1<<24),
+  };
+  return node_size[height - 1] + (num_level + 63) / 64;
+}
+
+bit_tree_column::bit_tree_column(int num_index) {
+  assert(num_index < (1 << 30));
+  num_index_ = num_index;
+  height_ = compute_height(num_index);
+  data_.resize(compute_data_size(height_, num_index));
+}
+
+void bit_tree_column::clear() {
+  data_[0] = 0;
+}
+
+void bit_tree_column::set(index i) {
+}
+
 }
 
