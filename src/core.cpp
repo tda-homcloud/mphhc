@@ -72,7 +72,7 @@ bit_tree_column::bit_tree_column(int num_index) {
 }
 
 void bit_tree_column::clear() {
-  data_[0] = 0;
+  data_[0].clear();
 }
 
 void bit_tree_column::set(index i) {
@@ -80,32 +80,31 @@ void bit_tree_column::set(index i) {
   for (int h = height_ - 1; h >= 1; --h) {
     int k = (i >> 6 * h) & MASK;
     int next_r = (r << 6) + k + 1;
-    if ((data_[r] & (1ull<<k)) == 0) {
-      data_[next_r] = 0;
-      data_[r] |= 1ull<<k;
+    if (!data_[r].test(k)) {
+      data_[next_r].clear();
+      data_[r].set(k);
     }
     r = next_r;
   }
 
-  int k = i & MASK;
-  data_[r] |= (1ull<<k);
+  data_[r].set(i & MASK);
 }
 
 index bit_tree_column::max() const {
   using boost::core::bit_width;
   
-  if (data_[0] == 0)
+  if (data_[0].none())
     return -1;
   
   int r = 0;
   index i = 0;
   
   for (int h = height_ - 1; h >= 1; --h) {
-    int k = bit_width(data_[r]) - 1;
+    int k = data_[r].max();
     r = (r << 6) + k + 1;
     i = (i << 6) + k;
   }
-  return (i << 6) + bit_width(data_[r]) - 1;
+  return (i << 6) + data_[r].max();
 }
 
 void bit_tree_column::set_xor(index i) {
@@ -114,21 +113,21 @@ void bit_tree_column::set_xor(index i) {
   for (int h = height_ - 1; h >= 1; --h) {
     int k = (i >> 6 * h) & MASK;
     int next_r = (r << 6) + k + 1;
-    if ((data_[r] & (1ull<<k)) == 0) {
-      data_[next_r] = 0;
-      data_[r] |= 1ull<<k;
+    if (!data_[r].test(k)) {
+      data_[next_r].clear();
+      data_[r].set(k);
     }
     r = next_r;
   }
 
-  data_[r] ^= 1ull << (i & MASK);
+  data_[r].flip(i & MASK);
 
   for (int h = 1; h < height_; ++h) {
-    if (data_[r] != 0)
+    if (data_[r].any())
       break;
     int next_r = (r - 1) >> 6;
     int k = (i >> 6 * h) & MASK;
-    data_[next_r] ^= (1ull << k);
+    data_[next_r].flip(k);
     r = next_r;
   }
 }
@@ -136,7 +135,7 @@ void bit_tree_column::set_xor(index i) {
 std::vector<index> bit_tree_column::to_vector() const {
   std::vector<index> indices;
 
-  if (data_[0] == 0)
+  if (data_[0].none())
     return indices;
   
   retrieve(height_ - 1, 0, 0, &indices);
@@ -147,14 +146,14 @@ void bit_tree_column::retrieve(int h, int r, index i, std::vector<index>* indice
   using boost::core::bit_width;
   using boost::core::countr_zero;
 
-  uint64_t d = data_[r];
-  assert(d != 0);
+  bitset64 d = data_[r];
+  assert(d.any());
 
-  uint64_t high = bit_width(d);
-  uint64_t low = countr_zero(d);
+  int max = d.max();
+  int min = d.min();
 
-  for (uint64_t k = low; k < high; ++k) {
-    if (d & (1ull << k)) {
+  for (int k = min; k <= max; ++k) {
+    if (d.test(k)) {
       if (h == 0) {
         indices->push_back((i << 6) + k);
       } else {

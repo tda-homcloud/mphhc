@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <boost/core/bit.hpp>
 
 namespace mphhc {
 
@@ -31,11 +32,27 @@ class boundary_matrix {
   
 };
 
+class bitset64 {
+ public:
+  uint64_t data;
 
+  inline bitset64(): data(0ull) {}
+  
+  inline void clear() { data = 0ull; }
+  inline void flip(int pos) { data ^= (1ull << pos); }
+  inline void set(int pos) { data |= (1ull << pos); }
+
+  inline bool test(int pos) const { return (1ull << pos) & data; }
+  inline bool none() const { return data == 0ull; }
+  inline bool any() const { return data != 0ull; }
+  inline int max() const { return static_cast<int>(boost::core::bit_width(data)) - 1; }
+  inline int min() const { return boost::core::countr_zero(data); }
+};
+  
 class bit_tree_column {
   static const uint64_t MASK = (1 << 6) - 1;
   
-  std::vector<uint64_t> data_;
+  std::vector<bitset64> data_;
   int num_index_;
   int height_;
 
