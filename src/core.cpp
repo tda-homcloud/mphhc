@@ -71,6 +71,11 @@ bit_tree_column::bit_tree_column(int num_index) {
   clear();
 }
 
+void bit_tree_column::import_column(const column& column) {
+  for (index i: column)
+    set(i);
+}
+
 void bit_tree_column::clear() {
   data_[0].clear();
 }

@@ -2,6 +2,9 @@
 #define MPHHC_UNITTEST
 #include "mphhc/core.hpp"
 #include <vector>
+#include <random>
+
+using namespace mphhc;
 
 TEST(CoreTest, VersionString) {
     EXPECT_EQ(mphhc::get_version(), "0.1.0");
@@ -83,7 +86,7 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
   }
 }
 
-TEST_P(BitTreeColumnTest, SetAndToVector) {
+TEST_P(BitTreeColumnTest, SetAndExportColumn) {
   using namespace mphhc;
   using C = mphhc::column;
 
@@ -102,6 +105,23 @@ TEST_P(BitTreeColumnTest, SetAndToVector) {
   column.set((32<<6) + 191);
   ASSERT_EQ(column.export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
 }
+
+TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
+  BitTreeColumnTestParams const &p = GetParam();
+  
+  std::set<mphhc::index> indices;
+  std::minstd_rand0 rng(7438911);
+  std::uniform_int_distribution<> dist(0, p.num_simplices - 1);
+  
+  for (int i = 0; i < 400; ++i) {
+    indices.insert(dist(rng));
+  }
+
+  column column(indices.begin(), indices.end());
+  bit_tree_column bt_column(p.num_simplices);
+  bt_column.import_column(column);
+  ASSERT_EQ(bt_column.export_column(), column);
+};
 
 TEST_P(BitTreeColumnTest, SetXor) {
   using namespace mphhc;

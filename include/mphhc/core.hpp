@@ -63,6 +63,7 @@ class bit_tree_column {
   static int compute_data_size(int height, int num_level);
   
   bit_tree_column(int num_index);
+  void import_column(const column& vec);
   void clear();
   void set(index i);
   void set_xor(index i);
