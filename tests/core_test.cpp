@@ -35,7 +35,7 @@ TEST(BitTreeColumnStaticFunctionTest, ComputeDataSize) {
   ASSERT_EQ(bit_tree_column::compute_data_size(1, 64), 1);
   ASSERT_EQ(bit_tree_column::compute_data_size(2, 65), 3);
   ASSERT_EQ(bit_tree_column::compute_data_size(2, 128), 3);
-  ASSERT_EQ(bit_tree_column::compute_data_size(2, 129), 4);
+  ASSERT_EQ(bit_tree_column::compute_data_size(2, 191), 4);
   ASSERT_EQ(bit_tree_column::compute_data_size(5, 64 * 64 * 64 * 64 * 63),
             1 + 64 + (64 * 64) + (64 * 64 * 64) + (64 * 64 * 64 * 63));
             
@@ -60,7 +60,8 @@ INSTANTIATE_TEST_SUITE_P(
          BitTreeColumnTestParams{64 * 48},
          BitTreeColumnTestParams{64 * 64 * 48},
          BitTreeColumnTestParams{64 * 64 * 64 * 48},
-         BitTreeColumnTestParams{64 * 64 * 64 * 64 * 48})
+         BitTreeColumnTestParams{64 * 64 * 64 * 64 * 48}
+    )
 );
 
 TEST_P(BitTreeColumnTest, SetAndMax) {
@@ -76,9 +77,9 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
 
   if (p.num_simplices > 64 * 64) {
     column.set(64 * 64 + 34);
-    column.set(64 * 64 + 129);
+    column.set(64 * 64 + 127);
     column.set(64  + 130);
-    ASSERT_EQ(column.max(), 64 * 64 + 129);
+    ASSERT_EQ(column.max(), 64 * 64 + 127);
   }
 }
 
@@ -98,9 +99,8 @@ TEST_P(BitTreeColumnTest, SetAndToVector) {
   if (p.num_simplices <= 64) return;
 
   column.set((32<<6) + 12);
-
-  ASSERT_EQ(column.max(), (32<<6) + 12);
-  ASSERT_EQ(column.to_vector(), (V{17, 29, 63, (32<<6) + 12}));
+  column.set((32<<6) + 191);
+  ASSERT_EQ(column.to_vector(), (V{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
 }
 
 TEST_P(BitTreeColumnTest, SetXor) {
@@ -131,9 +131,10 @@ TEST_P(BitTreeColumnTest, SetXor) {
     
     column.set_xor(64 * 32 + 31);
     ASSERT_EQ(column.to_vector(), (V{17, 64 * 32 + 31, 64 * 64 + 21}));
-    column.set_xor(64 * 64 + 129);
+    column.set_xor(64 * 64 + 191);
+    ASSERT_EQ(column.to_vector(), (V{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
     column.set_xor(64 * 32 + 31);
-    column.set_xor(64 * 64 + 129);
+    column.set_xor(64 * 64 + 191);
     ASSERT_EQ(column.to_vector(), (V{17, 64 * 64 + 21}));
 
     column.set_xor(64 * 64 + 20);
