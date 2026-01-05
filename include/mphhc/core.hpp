@@ -6,7 +6,6 @@
 namespace mphhc {
 
 std::string get_version();
-int add(int a, int b);
 
 using index = int32_t;
 using column = std::vector<index>;
@@ -34,9 +33,13 @@ class boundary_matrix {
 
 
 class bit_tree_column {
+  static const uint64_t MASK = (1 << 6) - 1;
+  
   std::vector<uint64_t> data_;
   int num_index_;
   int height_;
+
+  void retrieve(int h, int r, int i, std::vector<index>* indices) const;
 
  public:
   static int compute_height(int num_index);
@@ -45,6 +48,13 @@ class bit_tree_column {
   bit_tree_column(int num_index);
   void clear();
   void set(index i);
+  void set_xor(index i);
+  index max() const;
+  std::vector<index> to_vector() const;
+  
+#ifdef MPHHC_UNITTEST
+  const std::vector<uint64_t>& data() const;
+#endif
 };
 
 
