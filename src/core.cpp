@@ -138,6 +138,8 @@ void bit_tree_column::set_xor(index i) {
 }
 
 void bit_tree_column::add(const column& other) {
+  for (index i: other)
+    set_xor(i);
 }
 
 column bit_tree_column::export_column() const {

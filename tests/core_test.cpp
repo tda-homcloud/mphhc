@@ -3,6 +3,7 @@
 #include "mphhc/core.hpp"
 #include <vector>
 #include <random>
+#include <iterator>
 
 using namespace mphhc;
 
@@ -128,7 +129,23 @@ TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
 
   bt_column.import_column(column);
   ASSERT_EQ(bt_column.export_column(), column);
-};
+}
+
+TEST_P(BitTreeColumnTest, Add) {
+  BitTreeColumnTestParams const &p = GetParam();
+  std::minstd_rand0 rng(7438911);
+
+  column column_1 = random_column(&rng, p.num_simplices, 400);
+  column column_2 = random_column(&rng, p.num_simplices, 400);
+  column expected;
+  std::set_symmetric_difference(column_1.begin(), column_1.end(), column_2.begin(), column_2.end(),
+                                std::back_inserter(expected));
+  bit_tree_column bt_column(p.num_simplices);
+  bt_column.import_column(column_1);
+  bt_column.add(column_2);
+  
+  ASSERT_EQ(bt_column.export_column(), expected);
+}
 
 TEST_P(BitTreeColumnTest, SetXor) {
   using namespace mphhc;
