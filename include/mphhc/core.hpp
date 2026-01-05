@@ -68,6 +68,7 @@ class bit_tree_column {
   void set(index i);
   void set_xor(index i);
   index max() const;
+  void add(const column& other);
   column export_column() const;
   
 #ifdef MPHHC_UNITTEST

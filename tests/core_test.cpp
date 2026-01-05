@@ -106,19 +106,26 @@ TEST_P(BitTreeColumnTest, SetAndExportColumn) {
   ASSERT_EQ(column.export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
 }
 
-TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
-  BitTreeColumnTestParams const &p = GetParam();
-  
+using rng = std::minstd_rand0;
+
+column random_column(rng* rng, int num_simplices, int num_samples) {
   std::set<mphhc::index> indices;
-  std::minstd_rand0 rng(7438911);
-  std::uniform_int_distribution<> dist(0, p.num_simplices - 1);
-  
-  for (int i = 0; i < 400; ++i) {
-    indices.insert(dist(rng));
+  std::uniform_int_distribution<> dist(0, num_simplices - 1);
+
+  for (int i = 0; i < num_samples; ++i) {
+    indices.insert(dist(*rng));
   }
 
   column column(indices.begin(), indices.end());
+  return column;
+}
+
+TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
+  BitTreeColumnTestParams const &p = GetParam();
+  std::minstd_rand0 rng(7438911);
+  column column = random_column(&rng, p.num_simplices, 400);
   bit_tree_column bt_column(p.num_simplices);
+
   bt_column.import_column(column);
   ASSERT_EQ(bt_column.export_column(), column);
 };
