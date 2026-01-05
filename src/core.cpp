@@ -132,8 +132,8 @@ void bit_tree_column::set_xor(index i) {
   }
 }
 
-std::vector<index> bit_tree_column::to_vector() const {
-  std::vector<index> indices;
+column bit_tree_column::export_column() const {
+  column indices;
 
   if (data_[0].none())
     return indices;
@@ -142,7 +142,7 @@ std::vector<index> bit_tree_column::to_vector() const {
   return indices;
 }
 
-void bit_tree_column::retrieve(int h, int r, index i, std::vector<index>* indices) const {
+void bit_tree_column::retrieve(int h, int r, index i, column* indices) const {
   using boost::core::bit_width;
   using boost::core::countr_zero;
 

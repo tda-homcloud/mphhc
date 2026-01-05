@@ -85,64 +85,63 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
 
 TEST_P(BitTreeColumnTest, SetAndToVector) {
   using namespace mphhc;
-  using V = std::vector<mphhc::index>;
+  using C = mphhc::column;
 
   BitTreeColumnTestParams const &p = GetParam();
   bit_tree_column column(p.num_simplices);
 
-  ASSERT_EQ(column.to_vector(), (V{}));
+  ASSERT_EQ(column.export_column(), (C{}));
   column.set(29);
   column.set(63);
   column.set(17);
-  ASSERT_EQ(column.to_vector(), (V{17, 29, 63}));
+  ASSERT_EQ(column.export_column(), (C{17, 29, 63}));
 
   if (p.num_simplices <= 64) return;
 
   column.set((32<<6) + 12);
   column.set((32<<6) + 191);
-  ASSERT_EQ(column.to_vector(), (V{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
+  ASSERT_EQ(column.export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
 }
 
 TEST_P(BitTreeColumnTest, SetXor) {
   using namespace mphhc;
-  using mphhc::index;
-  using V = std::vector<index>;
+  using C = mphhc::column;
   
   BitTreeColumnTestParams const &p = GetParam();
   bit_tree_column column(p.num_simplices);
 
   column.set_xor(29);
-  ASSERT_EQ(column.to_vector(), (V{29}));
+  ASSERT_EQ(column.export_column(), (C{29}));
   column.set_xor(17);
-  ASSERT_EQ(column.to_vector(), (V{17, 29}));
+  ASSERT_EQ(column.export_column(), (C{17, 29}));
 
   column.set_xor(29);
-  ASSERT_EQ(column.to_vector(), (V{17}));
+  ASSERT_EQ(column.export_column(), (C{17}));
 
   column.set_xor(17);
-  ASSERT_EQ(column.to_vector(), (V{}));
+  ASSERT_EQ(column.export_column(), (C{}));
 
   if (p.num_simplices > 64 * 64) {
     column.set_xor(17);
-    ASSERT_EQ(column.to_vector(), (V{17}));
+    ASSERT_EQ(column.export_column(), (C{17}));
 
     column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.to_vector(), (V{17, 64 * 64 + 21}));
+    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 21}));
     
     column.set_xor(64 * 32 + 31);
-    ASSERT_EQ(column.to_vector(), (V{17, 64 * 32 + 31, 64 * 64 + 21}));
+    ASSERT_EQ(column.export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21}));
     column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.to_vector(), (V{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
+    ASSERT_EQ(column.export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
     column.set_xor(64 * 32 + 31);
     column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.to_vector(), (V{17, 64 * 64 + 21}));
+    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 21}));
 
     column.set_xor(64 * 64 + 20);
     column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.to_vector(), (V{17, 64 * 64 + 20}));
+    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 20}));
 
     column.set_xor(64 * 64 + 20);
     column.set_xor(17);
-    ASSERT_EQ(column.to_vector(), (V{}));
+    ASSERT_EQ(column.export_column(), (C{}));
   }
 }

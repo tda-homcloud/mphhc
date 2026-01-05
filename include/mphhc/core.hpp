@@ -67,7 +67,7 @@ class bit_tree_column {
   void set(index i);
   void set_xor(index i);
   index max() const;
-  std::vector<index> to_vector() const;
+  column export_column() const;
   
 #ifdef MPHHC_UNITTEST
   const std::vector<uint64_t>& data() const;
