@@ -205,7 +205,7 @@ TEST(BoundaryMatrixTest, Reduce) {
   bm.add_dim_col(1, C{1, 4}); // 8
   bm.add_dim_col(2, C{5, 6, 8}); // 9
   bm.add_dim_col(2, C{2, 7, 8}); // 10
-  bm.reduce();
+  bm.reduce_twist();
 
   std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
   std::vector<birth_death_pair> expected = {

@@ -40,7 +40,8 @@ class boundary_matrix {
   index add_dim_col(int dim, const column& col);
   int num_simplices() const;
 
-  void reduce();
+  void reduce_standard();
+  void reduce_twist();
   std::vector<birth_death_pair> birth_death_pairs() const;
 };
 
@@ -80,6 +81,7 @@ class bit_tree_column {
   void set(index i);
   void set_xor(index i);
   index max() const;
+  bool none() const;
   void add(const column& other);
   column export_column() const;
 };

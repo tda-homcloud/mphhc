@@ -69,7 +69,7 @@ int boundary_matrix::num_simplices() const {
   return sum;
 }
 
-void boundary_matrix::reduce() {
+void boundary_matrix::reduce_standard() {
   if (reduced_)
     return;
 
@@ -95,6 +95,43 @@ void boundary_matrix::reduce() {
       columns_[d][i] = bt_column.export_column();
       if (!columns_[d][i].empty())
         pivot_table.insert(std::make_pair(columns_[d][i].back(), i));
+    }
+  }
+  
+  reduced_ = true;
+}
+
+void boundary_matrix::reduce_twist() {
+  if (reduced_)
+    return;
+
+  bit_tree_column bt_column(num_simplices());
+  
+  for (int d = max_dim(); d >= 1; --d) {
+    std::unordered_map<index, index> pivot_table;
+    for (index i = 0; i < columns_[d].size(); ++i) {
+      if (columns_[d][i].empty())
+        continue;
+      if (pivot_table.count(columns_[d][i].back()) == 0) {
+        index L = columns_[d][i].back();
+        pivot_table.insert(std::make_pair(L, i));
+        columns_[d - 1][L].clear();
+        continue;
+      }
+      
+      bt_column.clear();
+      bt_column.import_column(columns_[d][i]);
+
+      std::unordered_map<index, index>::const_iterator it;
+      while ((it = pivot_table.find(bt_column.max())) != pivot_table.end()) {
+        bt_column.add(columns_[d][it->second]);
+      }
+      columns_[d][i] = bt_column.export_column();
+      if (!columns_[d][i].empty()) {
+        index L = columns_[d][i].back();
+        pivot_table.insert(std::make_pair(L, i));
+        columns_[d - 1][L].clear();
+      }
     }
   }
   
@@ -195,6 +232,10 @@ index bit_tree_column::max() const {
     i = (i << 6) + k;
   }
   return (i << 6) + data_[r].max();
+}
+
+bool bit_tree_column::none() const {
+  return data_[0].none();
 }
 
 void bit_tree_column::set_xor(index i) {
