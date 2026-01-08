@@ -189,3 +189,35 @@ TEST_P(BitTreeColumnTest, SetXor) {
     ASSERT_EQ(column.export_column(), (C{}));
   }
 }
+
+TEST(BoundaryMatrixTest, Reduce) {
+  using C = mphhc::column;
+  boundary_matrix bm(2);
+
+  bm.add_dim_col(0, C{}); // 0 
+  bm.add_dim_col(0, C{}); // 1
+  bm.add_dim_col(1, C{0, 1}); // 2
+  bm.add_dim_col(0, C{}); // 3 
+  bm.add_dim_col(0, C{}); // 4
+  bm.add_dim_col(1, C{3, 4}); // 5
+  bm.add_dim_col(1, C{1, 3}); // 6
+  bm.add_dim_col(1, C{0, 4}); // 7
+  bm.add_dim_col(1, C{1, 4}); // 8
+  bm.add_dim_col(2, C{5, 6, 8}); // 9
+  bm.add_dim_col(2, C{2, 7, 8}); // 10
+  bm.reduce();
+
+  std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
+  std::vector<birth_death_pair> expected = {
+    {0, 1, 2},
+    {0, 4, 5},
+    {0, 3, 6},
+    {1, 8, 9},
+    {1, 7, 10},
+    {0, 0, -1},
+  };
+
+  std::sort(pairs.begin(), pairs.end());
+  std::sort(expected.begin(), expected.end());
+  ASSERT_EQ(pairs, expected);
+}

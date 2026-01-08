@@ -10,26 +10,38 @@ std::string get_version();
 
 using index = int32_t;
 using column = std::vector<index>;
+struct birth_death_pair {
+  int dim;
+  index birth, death;
 
+  birth_death_pair(int dim, index birth, index death);
+  bool operator==(const birth_death_pair&) const;
+  bool operator<(const birth_death_pair&) const;
+  friend void PrintTo(const birth_death_pair& pair, std::ostream* os); 
+};
 
 class boundary_matrix {
   using local_index = int32_t;
   
   struct index_info {
-    int dim_;
-    local_index nth_;
+    int dim;
+    local_index nth;
   };
   
   std::vector<std::vector<column>> columns_;
   std::vector<std::vector<index>> local_to_global_index_;
   std::vector<index_info> global_to_local_index_;
-
+  bool reduced_;
+  
  public:
   boundary_matrix(int maxdim);
+  int max_dim() const;
   index add_dim_col(int dim, column&& col);
   index add_dim_col(int dim, const column& col);
   int num_simplices() const;
-  
+
+  void reduce();
+  std::vector<birth_death_pair> birth_death_pairs() const;
 };
 
 class bitset64 {
