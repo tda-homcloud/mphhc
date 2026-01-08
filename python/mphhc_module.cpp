@@ -68,6 +68,18 @@ static PyObject* BoundaryMatrix_num_simplices(BoundaryMatrixObject* self, PyObje
     return PyLong_FromLong(self->bm->num_simplices());
 }
 
+static PyObject* BoundaryMatrix_is_reduced(BoundaryMatrixObject* self, PyObject* args) {
+    if (self->bm == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
+        return NULL;
+    }
+    if (self->bm->is_reduced()) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
+
 static PyObject* BoundaryMatrix_add_dim_col(BoundaryMatrixObject* self, PyObject* args) {
     if (self->bm == NULL) {
         PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
@@ -131,15 +143,15 @@ static PyObject* BoundaryMatrix_birth_death_pairs(BoundaryMatrixObject* self, Py
         return NULL;
     }
     
-    // Check if reduced is false to avoid assertion failure in C++
-    // Since we can't easily access the private reduced_ member, 
-    // we rely on the user or catch assertions if possible, but assert aborts.
-    // However, for this implementation, we will assume standard usage.
-    // If the C++ code had a is_reduced() method, that would be safer.
+    if (!self->bm->is_reduced()) {
+        PyErr_SetString(PyExc_RuntimeError, "Matrix must be reduced before calling birth_death_pairs. Call reduce_standard() or reduce_twist() first.");
+        return NULL;
+    }
     
     std::vector<mphhc::birth_death_pair> pairs = self->bm->birth_death_pairs();
     
     PyObject* list = PyList_New(pairs.size());
+
     if (!list) return NULL;
 
     for (size_t i = 0; i < pairs.size(); ++i) {
@@ -157,6 +169,7 @@ static PyObject* BoundaryMatrix_birth_death_pairs(BoundaryMatrixObject* self, Py
 static PyMethodDef BoundaryMatrix_methods[] = {
     {"max_dim", (PyCFunction)BoundaryMatrix_max_dim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)BoundaryMatrix_num_simplices, METH_NOARGS, "Return number of simplices"},
+    {"is_reduced", (PyCFunction)BoundaryMatrix_is_reduced, METH_NOARGS, "Return whether the matrix is reduced"},
     {"add_dim_col", (PyCFunction)BoundaryMatrix_add_dim_col, METH_VARARGS, "Add a column for a dimension"},
     {"reduce_standard", (PyCFunction)BoundaryMatrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
     {"reduce_twist", (PyCFunction)BoundaryMatrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},

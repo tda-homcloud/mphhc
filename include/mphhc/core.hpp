@@ -39,6 +39,7 @@ class boundary_matrix {
   index add_dim_col(int dim, column&& col);
   index add_dim_col(int dim, const column& col);
   int num_simplices() const;
+  bool is_reduced() const;
 
   void reduce_standard();
   void reduce_twist();

@@ -69,6 +69,10 @@ int boundary_matrix::num_simplices() const {
   return sum;
 }
 
+bool boundary_matrix::is_reduced() const {
+  return reduced_;
+}
+
 void boundary_matrix::reduce_standard() {
   if (reduced_)
     return;
