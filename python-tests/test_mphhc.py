@@ -28,7 +28,7 @@ def test_Matrix_reduce():
         (0, 3, 6),
         (1, 8, 9),
         (1, 7, 10),
-        (0, 0, -1),
+        (0, 0, None),
     ]
     
     # Sort for comparison

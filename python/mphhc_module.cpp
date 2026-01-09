@@ -142,7 +142,12 @@ static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
     if (!list) return NULL;
 
     for (size_t i = 0; i < pairs.size(); ++i) {
-        PyObject* tuple = Py_BuildValue("(iii)", pairs[i].dim, pairs[i].birth, pairs[i].death);
+        PyObject* tuple;
+        if (pairs[i].death < 0)
+          tuple = Py_BuildValue("(iiO)", pairs[i].dim, pairs[i].birth, Py_None);
+        else
+          tuple = Py_BuildValue("(iii)", pairs[i].dim, pairs[i].birth, pairs[i].death);
+
         if (!tuple) {
             Py_DECREF(list);
             return NULL;
