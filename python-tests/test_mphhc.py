@@ -1,8 +1,8 @@
 import mphhc
 import pytest
 
-def test_boundary_matrix_reduce():
-    bm = mphhc.boundary_matrix(2)
+def test_Matrix_reduce():
+    bm = mphhc.Matrix(2)
     # C++ indices: 0, 1, 2(edge), 3, 4, 5(edge), 6(edge), 7(edge), 8(edge), 9(face), 10(face)
     bm.add_dim_col(0, []) # 0
     bm.add_dim_col(0, []) # 1

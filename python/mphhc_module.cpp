@@ -20,25 +20,25 @@ static PyObject* mphhc_get_version(PyObject* self, PyObject* args) {
 typedef struct {
     PyObject_HEAD
     mphhc::boundary_matrix* bm;
-} BoundaryMatrixObject;
+} MatrixObject;
 
-static void BoundaryMatrix_dealloc(BoundaryMatrixObject* self) {
+static void Matrix_dealloc(MatrixObject* self) {
     if (self->bm) {
         delete self->bm;
     }
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject* BoundaryMatrix_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
-    BoundaryMatrixObject* self;
-    self = (BoundaryMatrixObject*)type->tp_alloc(type, 0);
+static PyObject* Matrix_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+    MatrixObject* self;
+    self = (MatrixObject*)type->tp_alloc(type, 0);
     if (self != NULL) {
         self->bm = NULL;
     }
     return (PyObject*)self;
 }
 
-static int BoundaryMatrix_init(BoundaryMatrixObject* self, PyObject* args, PyObject* kwds) {
+static int Matrix_init(MatrixObject* self, PyObject* args, PyObject* kwds) {
     int maxdim;
     if (!PyArg_ParseTuple(args, "i", &maxdim)) {
         return -1;
@@ -52,7 +52,7 @@ static int BoundaryMatrix_init(BoundaryMatrixObject* self, PyObject* args, PyObj
     return 0;
 }
 
-static bool ensure_bm_initialized(BoundaryMatrixObject* self) {
+static bool ensure_bm_initialized(MatrixObject* self) {
     if (self->bm == NULL) {
         PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
         return false;
@@ -60,17 +60,17 @@ static bool ensure_bm_initialized(BoundaryMatrixObject* self) {
     return true;
 }
 
-static PyObject* BoundaryMatrix_max_dim(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_max_dim(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     return PyLong_FromLong(self->bm->max_dim());
 }
 
-static PyObject* BoundaryMatrix_num_simplices(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_num_simplices(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     return PyLong_FromLong(self->bm->num_simplices());
 }
 
-static PyObject* BoundaryMatrix_is_reduced(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     if (self->bm->is_reduced()) {
         Py_RETURN_TRUE;
@@ -79,7 +79,7 @@ static PyObject* BoundaryMatrix_is_reduced(BoundaryMatrixObject* self, PyObject*
     }
 }
 
-static PyObject* BoundaryMatrix_add_dim_col(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_add_dim_col(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
 
     int dim;
@@ -115,19 +115,19 @@ static PyObject* BoundaryMatrix_add_dim_col(BoundaryMatrixObject* self, PyObject
     return PyLong_FromLong(idx);
 }
 
-static PyObject* BoundaryMatrix_reduce_standard(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_reduce_standard(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     self->bm->reduce_standard();
     Py_RETURN_NONE;
 }
 
-static PyObject* BoundaryMatrix_reduce_twist(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_reduce_twist(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     self->bm->reduce_twist();
     Py_RETURN_NONE;
 }
 
-static PyObject* BoundaryMatrix_birth_death_pairs(BoundaryMatrixObject* self, PyObject* args) {
+static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     
     if (!self->bm->is_reduced()) {
@@ -153,23 +153,23 @@ static PyObject* BoundaryMatrix_birth_death_pairs(BoundaryMatrixObject* self, Py
     return list;
 }
 
-static PyMethodDef BoundaryMatrix_methods[] = {
-    {"max_dim", (PyCFunction)BoundaryMatrix_max_dim, METH_NOARGS, "Return max dimension"},
-    {"num_simplices", (PyCFunction)BoundaryMatrix_num_simplices, METH_NOARGS, "Return number of simplices"},
-    {"is_reduced", (PyCFunction)BoundaryMatrix_is_reduced, METH_NOARGS, "Return whether the matrix is reduced"},
-    {"add_dim_col", (PyCFunction)BoundaryMatrix_add_dim_col, METH_VARARGS, "Add a column for a dimension"},
-    {"reduce_standard", (PyCFunction)BoundaryMatrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
-    {"reduce_twist", (PyCFunction)BoundaryMatrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},
-    {"birth_death_pairs", (PyCFunction)BoundaryMatrix_birth_death_pairs, METH_NOARGS, "Get birth-death pairs"},
+static PyMethodDef Matrix_methods[] = {
+    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
+    {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS, "Return number of simplices"},
+    {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS, "Return whether the matrix is reduced"},
+    {"add_dim_col", (PyCFunction)Matrix_add_dim_col, METH_VARARGS, "Add a column for a dimension"},
+    {"reduce_standard", (PyCFunction)Matrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
+    {"reduce_twist", (PyCFunction)Matrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},
+    {"birth_death_pairs", (PyCFunction)Matrix_birth_death_pairs, METH_NOARGS, "Get birth-death pairs"},
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject BoundaryMatrixType = {
+static PyTypeObject MatrixType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "mphhc.boundary_matrix",   /* tp_name */
-    sizeof(BoundaryMatrixObject), /* tp_basicsize */
+    "mphhc.Matrix",   /* tp_name */
+    sizeof(MatrixObject), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    (destructor)BoundaryMatrix_dealloc, /* tp_dealloc */
+    (destructor)Matrix_dealloc, /* tp_dealloc */
     0,                         /* tp_vectorcall_offset */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -192,7 +192,7 @@ static PyTypeObject BoundaryMatrixType = {
     0,                         /* tp_weaklistoffset */
     0,                         /* tp_iter */
     0,                         /* tp_iternext */
-    BoundaryMatrix_methods,    /* tp_methods */
+    Matrix_methods,    /* tp_methods */
     0,                         /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
@@ -200,9 +200,9 @@ static PyTypeObject BoundaryMatrixType = {
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)BoundaryMatrix_init, /* tp_init */
+    (initproc)Matrix_init, /* tp_init */
     0,                         /* tp_alloc */
-    BoundaryMatrix_new,        /* tp_new */
+    Matrix_new,        /* tp_new */
 };
 
 static PyMethodDef mphhc_methods[] = {
@@ -221,16 +221,16 @@ static struct PyModuleDef mphhc_module = {
 PyMODINIT_FUNC PyInit_mphhc(void) {
     PyObject* m;
 
-    if (PyType_Ready(&BoundaryMatrixType) < 0)
+    if (PyType_Ready(&MatrixType) < 0)
         return NULL;
 
     m = PyModule_Create(&mphhc_module);
     if (m == NULL)
         return NULL;
 
-    Py_INCREF(&BoundaryMatrixType);
-    if (PyModule_AddObject(m, "boundary_matrix", (PyObject*)&BoundaryMatrixType) < 0) {
-        Py_DECREF(&BoundaryMatrixType);
+    Py_INCREF(&MatrixType);
+    if (PyModule_AddObject(m, "Matrix", (PyObject*)&MatrixType) < 0) {
+        Py_DECREF(&MatrixType);
         Py_DECREF(m);
         return NULL;
     }
