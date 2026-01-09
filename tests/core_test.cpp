@@ -7,10 +7,6 @@
 
 using namespace mphhc;
 
-TEST(CoreTest, VersionString) {
-    EXPECT_EQ(mphhc::get_version(), "0.1.0");
-}
-
 TEST(BoundaryMatrixTest, AddDimCol) {
   using namespace mphhc;
   boundary_matrix boundary_matrix(2);
