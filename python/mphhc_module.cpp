@@ -52,27 +52,26 @@ static int BoundaryMatrix_init(BoundaryMatrixObject* self, PyObject* args, PyObj
     return 0;
 }
 
-static PyObject* BoundaryMatrix_max_dim(BoundaryMatrixObject* self, PyObject* args) {
+static bool ensure_bm_initialized(BoundaryMatrixObject* self) {
     if (self->bm == NULL) {
         PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
+        return false;
     }
+    return true;
+}
+
+static PyObject* BoundaryMatrix_max_dim(BoundaryMatrixObject* self, PyObject* args) {
+    if (!ensure_bm_initialized(self)) return NULL;
     return PyLong_FromLong(self->bm->max_dim());
 }
 
 static PyObject* BoundaryMatrix_num_simplices(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
     return PyLong_FromLong(self->bm->num_simplices());
 }
 
 static PyObject* BoundaryMatrix_is_reduced(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
     if (self->bm->is_reduced()) {
         Py_RETURN_TRUE;
     } else {
@@ -81,10 +80,7 @@ static PyObject* BoundaryMatrix_is_reduced(BoundaryMatrixObject* self, PyObject*
 }
 
 static PyObject* BoundaryMatrix_add_dim_col(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
 
     int dim;
     PyObject* col_obj;
@@ -120,28 +116,19 @@ static PyObject* BoundaryMatrix_add_dim_col(BoundaryMatrixObject* self, PyObject
 }
 
 static PyObject* BoundaryMatrix_reduce_standard(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
     self->bm->reduce_standard();
     Py_RETURN_NONE;
 }
 
 static PyObject* BoundaryMatrix_reduce_twist(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
     self->bm->reduce_twist();
     Py_RETURN_NONE;
 }
 
 static PyObject* BoundaryMatrix_birth_death_pairs(BoundaryMatrixObject* self, PyObject* args) {
-    if (self->bm == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "boundary_matrix not initialized");
-        return NULL;
-    }
+    if (!ensure_bm_initialized(self)) return NULL;
     
     if (!self->bm->is_reduced()) {
         PyErr_SetString(PyExc_RuntimeError, "Matrix must be reduced before calling birth_death_pairs. Call reduce_standard() or reduce_twist() first.");
