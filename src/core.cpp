@@ -63,11 +63,7 @@ index boundary_matrix::set_dim_col(index i, int dim, const column& col) {
 }
 
 int boundary_matrix::num_simplices() const {
-  int sum = 0;
-  for (const auto& v: columns_) {
-    sum += v.size();
-  }
-  return sum;
+  return global_to_local_index_.size();
 }
 
 bool boundary_matrix::is_reduced() const {
@@ -203,10 +199,6 @@ void bit_tree_column::import_column(const column& column) {
     set(i);
 }
 
-void bit_tree_column::clear() {
-  data_[0].clear();
-}
-
 void bit_tree_column::set(index i) {
   int r = 0;
   for (int h = height_ - 1; h >= 1; --h) {
@@ -220,57 +212,6 @@ void bit_tree_column::set(index i) {
   }
 
   data_[r].set(i & MASK);
-}
-
-index bit_tree_column::max() const {
-  using boost::core::bit_width;
-  
-  if (data_[0].none())
-    return -1;
-  
-  int r = 0;
-  index i = 0;
-  
-  for (int h = height_ - 1; h >= 1; --h) {
-    int k = data_[r].max();
-    r = (r << 6) + k + 1;
-    i = (i << 6) + k;
-  }
-  return (i << 6) + data_[r].max();
-}
-
-bool bit_tree_column::none() const {
-  return data_[0].none();
-}
-
-void bit_tree_column::set_xor(index i) {
-  int r = 0;
-
-  for (int h = height_ - 1; h >= 1; --h) {
-    int k = (i >> 6 * h) & MASK;
-    int next_r = (r << 6) + k + 1;
-    if (!data_[r].test(k)) {
-      data_[next_r].clear();
-      data_[r].set(k);
-    }
-    r = next_r;
-  }
-
-  data_[r].flip(i & MASK);
-
-  for (int h = 1; h < height_; ++h) {
-    if (data_[r].any())
-      break;
-    int next_r = (r - 1) >> 6;
-    int k = (i >> 6 * h) & MASK;
-    data_[next_r].flip(k);
-    r = next_r;
-  }
-}
-
-void bit_tree_column::add(const column& other) {
-  for (index i: other)
-    set_xor(i);
 }
 
 column bit_tree_column::export_column() const {

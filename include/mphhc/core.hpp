@@ -78,12 +78,58 @@ class bit_tree_column {
   
   explicit bit_tree_column(int num_index);
   void import_column(const column& vec);
-  void clear();
+  inline void clear() { data_[0].clear(); }
   void set(index i);
-  void set_xor(index i);
-  index max() const;
-  bool none() const;
-  void add(const column& other);
+
+  inline void set_xor(index i) {
+    int r = 0;
+
+    for (int h = height_ - 1; h >= 1; --h) {
+      int k = (i >> 6 * h) & MASK;
+      int next_r = (r << 6) + k + 1;
+      if (!data_[r].test(k)) {
+        data_[next_r].clear();
+        data_[r].set(k);
+      }
+      r = next_r;
+    }
+
+    data_[r].flip(i & MASK);
+
+    for (int h = 1; h < height_; ++h) {
+      if (data_[r].any())
+        break;
+      int next_r = (r - 1) >> 6;
+      int k = (i >> 6 * h) & MASK;
+      data_[next_r].flip(k);
+      r = next_r;
+    }
+  }
+
+  inline index max() const {
+    using boost::core::bit_width;
+  
+    if (data_[0].none())
+      return -1;
+  
+    int r = 0;
+    index i = 0;
+  
+    for (int h = height_ - 1; h >= 1; --h) {
+      int k = data_[r].max();
+      r = (r << 6) + k + 1;
+      i = (i << 6) + k;
+    }
+    return (i << 6) + data_[r].max();
+  }
+
+  inline bool none() const { return data_[0].none(); }
+
+  inline void add(const column& other) {
+    for (index i: other)
+      set_xor(i);
+  }
+
   column export_column() const;
 };
 
