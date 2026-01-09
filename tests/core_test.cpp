@@ -11,9 +11,9 @@ TEST(BoundaryMatrixTest, AddDimCol) {
   using namespace mphhc;
   boundary_matrix boundary_matrix(2);
 
-  boundary_matrix.add_dim_col(0, column{});
-  boundary_matrix.add_dim_col(0, column{});
-  boundary_matrix.add_dim_col(1, column{0, 1});
+  boundary_matrix.set_dim_col(0, column{});
+  boundary_matrix.set_dim_col(0, column{});
+  boundary_matrix.set_dim_col(1, column{0, 1});
 
   ASSERT_EQ(boundary_matrix.num_simplices(), 3);
 }
@@ -190,17 +190,17 @@ TEST(BoundaryMatrixTest, Reduce) {
   using C = mphhc::column;
   boundary_matrix bm(2);
 
-  bm.add_dim_col(0, C{}); // 0 
-  bm.add_dim_col(0, C{}); // 1
-  bm.add_dim_col(1, C{0, 1}); // 2
-  bm.add_dim_col(0, C{}); // 3 
-  bm.add_dim_col(0, C{}); // 4
-  bm.add_dim_col(1, C{3, 4}); // 5
-  bm.add_dim_col(1, C{1, 3}); // 6
-  bm.add_dim_col(1, C{0, 4}); // 7
-  bm.add_dim_col(1, C{1, 4}); // 8
-  bm.add_dim_col(2, C{5, 6, 8}); // 9
-  bm.add_dim_col(2, C{2, 7, 8}); // 10
+  bm.set_dim_col(0, C{}); // 0 
+  bm.set_dim_col(0, C{}); // 1
+  bm.set_dim_col(1, C{0, 1}); // 2
+  bm.set_dim_col(0, C{}); // 3 
+  bm.set_dim_col(0, C{}); // 4
+  bm.set_dim_col(1, C{3, 4}); // 5
+  bm.set_dim_col(1, C{1, 3}); // 6
+  bm.set_dim_col(1, C{0, 4}); // 7
+  bm.set_dim_col(1, C{1, 4}); // 8
+  bm.set_dim_col(2, C{5, 6, 8}); // 9
+  bm.set_dim_col(2, C{2, 7, 8}); // 10
   bm.reduce_twist();
 
   std::vector<birth_death_pair> pairs = bm.birth_death_pairs();

@@ -79,7 +79,7 @@ static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
     }
 }
 
-static PyObject* Matrix_add_dim_col(MatrixObject* self, PyObject* args) {
+static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
 
     int dim;
@@ -111,7 +111,7 @@ static PyObject* Matrix_add_dim_col(MatrixObject* self, PyObject* args) {
         Py_DECREF(item);
     }
 
-    mphhc::index idx = self->bm->add_dim_col(dim, col);
+    mphhc::index idx = self->bm->set_dim_col(dim, col);
     return PyLong_FromLong(idx);
 }
 
@@ -157,7 +157,7 @@ static PyMethodDef Matrix_methods[] = {
     {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS, "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS, "Return whether the matrix is reduced"},
-    {"add_dim_col", (PyCFunction)Matrix_add_dim_col, METH_VARARGS, "Add a column for a dimension"},
+    {"set_dim_col", (PyCFunction)Matrix_set_dim_col, METH_VARARGS, "Add a column for a dimension"},
     {"reduce_standard", (PyCFunction)Matrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
     {"reduce_twist", (PyCFunction)Matrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},
     {"birth_death_pairs", (PyCFunction)Matrix_birth_death_pairs, METH_NOARGS, "Get birth-death pairs"},

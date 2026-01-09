@@ -40,7 +40,7 @@ int boundary_matrix::max_dim() const {
   return static_cast<int>(columns_.size()) - 1;
 }
 
-index boundary_matrix::add_dim_col(int dim, column&& col) {
+index boundary_matrix::set_dim_col(int dim, column&& col) {
   index new_index = global_to_local_index_.size();
   index_info new_local_index = { dim, static_cast<index>(columns_[dim].size()) };
     
@@ -56,9 +56,9 @@ index boundary_matrix::add_dim_col(int dim, column&& col) {
   return new_index;
 }
 
-index boundary_matrix::add_dim_col(int dim, const column& col) {
+index boundary_matrix::set_dim_col(int dim, const column& col) {
   column copied_col(col);
-  return add_dim_col(dim, std::move(copied_col));
+  return set_dim_col(dim, std::move(copied_col));
 }
 
 int boundary_matrix::num_simplices() const {

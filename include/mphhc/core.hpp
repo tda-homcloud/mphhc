@@ -36,8 +36,8 @@ class boundary_matrix {
  public:
   boundary_matrix(int maxdim);
   int max_dim() const;
-  index add_dim_col(int dim, column&& col);
-  index add_dim_col(int dim, const column& col);
+  index set_dim_col(int dim, column&& col);
+  index set_dim_col(int dim, const column& col);
   int num_simplices() const;
   bool is_reduced() const;
 
