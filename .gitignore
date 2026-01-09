@@ -47,6 +47,11 @@ cmake-build-*/
 .DS_Store
 Thumbs.db
 
+# --- Python ---
+*.egg-info/
+__pycache__/
+venv*/
+
 # --- Test coverage / Python if used ---
 *.gcda
 *.gcno
