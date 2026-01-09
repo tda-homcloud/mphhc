@@ -82,9 +82,15 @@ static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
 static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
 
+    mphhc::index idx;
     int dim;
     PyObject* col_obj;
-    if (!PyArg_ParseTuple(args, "iO", &dim, &col_obj)) {
+    if (!PyArg_ParseTuple(args, "iiO", &idx, &dim, &col_obj)) {
+        return NULL;
+    }
+
+    if (idx != self->bm->num_simplices()) {
+        PyErr_SetString(PyExc_TypeError, "index must be an incremental integer");
         return NULL;
     }
 
@@ -111,7 +117,7 @@ static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
         Py_DECREF(item);
     }
 
-    mphhc::index idx = self->bm->set_dim_col(dim, col);
+    self->bm->set_dim_col(idx, dim, col);
     return PyLong_FromLong(idx);
 }
 

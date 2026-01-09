@@ -4,17 +4,17 @@ import pytest
 def test_Matrix_reduce():
     bm = mphhc.Matrix(2)
     # C++ indices: 0, 1, 2(edge), 3, 4, 5(edge), 6(edge), 7(edge), 8(edge), 9(face), 10(face)
-    bm.set_dim_col(0, []) # 0
-    bm.set_dim_col(0, []) # 1
-    bm.set_dim_col(1, [0, 1]) # 2
-    bm.set_dim_col(0, []) # 3
-    bm.set_dim_col(0, []) # 4
-    bm.set_dim_col(1, [3, 4]) # 5
-    bm.set_dim_col(1, [1, 3]) # 6
-    bm.set_dim_col(1, [0, 4]) # 7
-    bm.set_dim_col(1, [1, 4]) # 8
-    bm.set_dim_col(2, [5, 6, 8]) # 9
-    bm.set_dim_col(2, [2, 7, 8]) # 10
+    bm.set_dim_col(0, 0, []) # 0
+    bm.set_dim_col(1, 0, []) # 1
+    bm.set_dim_col(2, 1, [0, 1]) # 2
+    bm.set_dim_col(3, 0, []) # 3
+    bm.set_dim_col(4, 0, []) # 4
+    bm.set_dim_col(5, 1, [3, 4]) # 5
+    bm.set_dim_col(6, 1, [1, 3]) # 6
+    bm.set_dim_col(7, 1, [0, 4]) # 7
+    bm.set_dim_col(8, 1, [1, 4]) # 8
+    bm.set_dim_col(9, 2, [5, 6, 8]) # 9
+    bm.set_dim_col(10, 2, [2, 7, 8]) # 10
 
     bm.reduce_twist()
     assert bm.is_reduced() is True
