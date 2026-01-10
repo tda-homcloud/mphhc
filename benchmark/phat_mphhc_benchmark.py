@@ -9,6 +9,12 @@ import mphhc
 from homcloud.cubical_ext import CubicalFiltrationExt
 
 
+def run(f):
+    t = time.perf_counter()
+    f()
+    return time.perf_counter() - t
+
+
 def alpha_filtration_from_uniform_random_points(rng, n):
     def sortkey(simplex_alpha_pair):
         simplex, alpha = simplex_alpha_pair
@@ -40,18 +46,12 @@ def benchmark_alpha_filtration(repeat, num_points):
             m1.set_dim_col(index, dim, b)
             m2.set_dim_col(index, dim, b)
 
-        t = time.perf_counter()
-        m1.reduce_twist()
-        t1 = time.perf_counter() - t
-
-        t = time.perf_counter()
-        m2.reduce_twist()
-        t2 = time.perf_counter() - t
-        ptimes_1.append(t1)
-        ptimes_2.append(t2)
+        ptimes_1.append(run(m1.reduce_twist))
+        ptimes_2.append(run(m2.reduce_twist))
         # print(set(m1.birth_death_pairs()) ^ set(m2.birth_death_pairs()))
-        
-    print("phat:", np.mean(ptimes_1), "mphhc", np.mean(ptimes_2))
+        # assert set(m1.birth_death_pairs()) == set(m2.birth_death_pairs())
+
+    print("phat:", np.mean(ptimes_1), "mphhc:", np.mean(ptimes_2))
 
     
 def cubical_filtration(rng, size):
@@ -73,20 +73,14 @@ def benchmark_random_3d_cubical(repeat, size):
         for index, (dim, col) in enumerate(bm["map"]):
             m2.set_dim_col(index, dim, col)
 
-        t = time.perf_counter()
-        m1.reduce_twist()
-        t1 = time.perf_counter() - t
-
-        t = time.perf_counter()
-        m2.reduce_twist()
-        t2 = time.perf_counter() - t
-        ptimes_1.append(t1)
-        ptimes_2.append(t2)
+        ptimes_1.append(run(m1.reduce_twist))
+        ptimes_2.append(run(m2.reduce_twist))
         # print(set(m1.birth_death_pairs()) ^ set(m2.birth_death_pairs()))
 
-    print("phat:", np.mean(ptimes_1), "mphhc", np.mean(ptimes_2))
+    print("phat:", np.mean(ptimes_1), "mphhc:", np.mean(ptimes_2))
 
 
 benchmark_alpha_filtration(repeat=5, num_points=10000)
-benchmark_random_3d_cubical(repeat=5, size=(50, 50, 50))
+# benchmark_alpha_filtration(repeat=5, num_points=100000)
+# benchmark_random_3d_cubical(repeat=5, size=(50, 50, 50))
 # benchmark_random_3d_cubical(repeat=5, size=(100, 100, 100))
