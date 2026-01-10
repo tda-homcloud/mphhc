@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <boost/core/bit.hpp>
+#include <iostream>
 
 namespace mphhc {
 
@@ -78,6 +79,7 @@ class bit_tree_column {
   std::vector<bitset64> data_;
   int num_index_;
   int height_;
+  int node_block_size_;
 
   void retrieve(int h, int r, int i, std::vector<index>* indices) const;
 
@@ -87,31 +89,44 @@ class bit_tree_column {
   
   explicit bit_tree_column(int num_index);
   void import_column(const column& vec);
-  inline void clear() { data_[0].clear(); }
-  void set(index i);
+  
+  inline void set_nodes(index i, int r) {
+    for (int h = 1; h <= height_ - 1; ++h) {
+      r = (r - 1) >> 6;
+      int k = (i >> (6 * h)) & MASK;
+      if (data_[r].test(k))
+        return;
+      else 
+        data_[r].set(k);
+    }
+  }
+
+  inline void set(index i) {
+    int r = (i >> 6) + node_block_size_;
+    int k = i & MASK;
+    data_[r].set(k);
+    set_nodes(i, r);
+  }
+
+  inline void unset_nodes(index i, int r) {
+    for (int h = 1; h <= height_ - 1; ++h) {
+      if (data_[r].any())
+        return;
+      r = (r - 1) >> 6;
+      int k = (i >> (6 * h)) & MASK;
+      data_[r].flip(k);
+    }
+  }
 
   inline void set_xor(index i) {
-    int r = 0;
-
-    for (int h = height_ - 1; h >= 1; --h) {
-      int k = (i >> 6 * h) & MASK;
-      int next_r = (r << 6) + k + 1;
-      if (!data_[r].test(k)) {
-        data_[next_r].clear();
-        data_[r].set(k);
-      }
-      r = next_r;
-    }
-
-    data_[r].flip(i & MASK);
-
-    for (int h = 1; h < height_; ++h) {
-      if (data_[r].any())
-        break;
-      int next_r = (r - 1) >> 6;
-      int k = (i >> 6 * h) & MASK;
-      data_[next_r].flip(k);
-      r = next_r;
+    int r = (i >> 6) + node_block_size_;
+    int k = i & MASK;
+    data_[r].flip(k);
+    
+    if (data_[r].test(k)) {
+      set_nodes(i, r);
+    } else {
+      unset_nodes(i, r);
     }
   }
 
@@ -139,7 +154,7 @@ class bit_tree_column {
       set_xor(i);
   }
 
-  column export_column() const;
+  column debug_export_column();
   void export_and_clear_column(column* col);
 };
 

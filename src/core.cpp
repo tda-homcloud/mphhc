@@ -5,6 +5,7 @@
 #include <boost/core/bit.hpp>
 #include <tuple>
 #include <unordered_map>
+#include <deque>
 
 namespace mphhc {
 
@@ -86,14 +87,13 @@ void boundary_matrix::reduce_standard() {
         continue;
       }
       
-      bt_column.clear();
       bt_column.import_column(columns_[d][i]);
 
       std::unordered_map<index, index>::const_iterator it;
       while ((it = pivot_table.find(bt_column.max())) != pivot_table.end()) {
         bt_column.add(columns_[d][it->second]);
       }
-      columns_[d][i] = bt_column.export_column();
+      bt_column.export_and_clear_column(&columns_[d][i]);
       if (!columns_[d][i].empty())
         pivot_table.insert(std::make_pair(columns_[d][i].back(), i));
     }
@@ -120,14 +120,13 @@ void boundary_matrix::reduce_twist() {
         continue;
       }
       
-      bt_column.clear();
       bt_column.import_column(columns_[d][i]);
 
       std::unordered_map<index, index>::const_iterator it;
       while ((it = pivot_table.find(bt_column.max())) != pivot_table.end()) {
         bt_column.add(columns_[d][it->second]);
       }
-      columns_[d][i] = bt_column.export_column();
+      bt_column.export_and_clear_column(&columns_[d][i]);
       if (!columns_[d][i].empty()) {
         index L = columns_[d][i].back();
         pivot_table.insert(std::make_pair(L, i));
@@ -184,7 +183,7 @@ bit_tree_column::bit_tree_column(int num_index) {
   num_index_ = num_index;
   height_ = compute_height(num_index);
   data_.resize(compute_data_size(height_, num_index));
-  clear();
+  node_block_size_ = NODE_BLOCK_SIZE_TABLE[height_];
 }
 
 void bit_tree_column::import_column(const column& column) {
@@ -192,31 +191,21 @@ void bit_tree_column::import_column(const column& column) {
     set(i);
 }
 
-void bit_tree_column::set(index i) {
-  int r = 0;
-  for (int h = height_ - 1; h >= 1; --h) {
-    int k = (i >> 6 * h) & MASK;
-    int next_r = (r << 6) + k + 1;
-    if (!data_[r].test(k)) {
-      data_[next_r].clear();
-      data_[r].set(k);
-    }
-    r = next_r;
-  }
-
-  data_[r].set(i & MASK);
 void bit_tree_column::export_and_clear_column(column* col) {
-  column r = export_column();
-  col->swap(r);
-  clear();
+  col->clear();
+
+  for (index m = max(); m != -1; m = max()) {
+    set_xor(m);
+    col->push_back(m);
+  }
+  std::reverse(col->begin(), col->end());
 }
 
-column bit_tree_column::export_column() const {
-  column indices;
+column bit_tree_column::debug_export_column() {
+  if (none())
+    return column{};
 
-  if (data_[0].none())
-    return indices;
-  
+  column indices;
   retrieve(height_ - 1, 0, 0, &indices);
   return indices;
 }
@@ -241,11 +230,5 @@ void bit_tree_column::retrieve(int h, int r, index i, column* indices) const {
     }
   }
 }
-
-#ifdef MPHHC_UNITTEST
-const std::vector<uint64_t>& bit_tree_column::data() const {
-  return data_;
-}
-#endif
 
 }

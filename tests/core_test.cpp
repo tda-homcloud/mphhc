@@ -83,24 +83,67 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
   }
 }
 
-TEST_P(BitTreeColumnTest, SetAndExportColumn) {
+TEST_P(BitTreeColumnTest, Set) {
   using namespace mphhc;
   using C = mphhc::column;
 
   BitTreeColumnTestParams const &p = GetParam();
   bit_tree_column column(p.num_simplices);
 
-  ASSERT_EQ(column.export_column(), (C{}));
+  ASSERT_EQ(column.debug_export_column(), (C{}));
   column.set(29);
   column.set(63);
   column.set(17);
-  ASSERT_EQ(column.export_column(), (C{17, 29, 63}));
+  ASSERT_EQ(column.debug_export_column(), (C{17, 29, 63}));
 
   if (p.num_simplices <= 64) return;
 
   column.set((32<<6) + 12);
   column.set((32<<6) + 191);
-  ASSERT_EQ(column.export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
+  ASSERT_EQ(column.debug_export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
+}
+
+TEST_P(BitTreeColumnTest, SetXor) {
+  using namespace mphhc;
+  using C = mphhc::column;
+  
+  BitTreeColumnTestParams const &p = GetParam();
+  bit_tree_column column(p.num_simplices);
+
+  column.set_xor(29);
+  ASSERT_EQ(column.debug_export_column(), (C{29}));
+  column.set_xor(17);
+  ASSERT_EQ(column.debug_export_column(), (C{17, 29}));
+
+  column.set_xor(29);
+  ASSERT_EQ(column.debug_export_column(), (C{17}));
+
+  column.set_xor(17);
+  ASSERT_EQ(column.debug_export_column(), (C{}));
+
+  if (p.num_simplices > 64 * 64) {
+    column.set_xor(17);
+    ASSERT_EQ(column.debug_export_column(), (C{17}));
+
+    column.set_xor(64 * 64 + 21);
+    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
+    
+    column.set_xor(64 * 32 + 31);
+    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21}));
+    column.set_xor(64 * 64 + 191);
+    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
+    column.set_xor(64 * 32 + 31);
+    column.set_xor(64 * 64 + 191);
+    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
+
+    column.set_xor(64 * 64 + 20);
+    column.set_xor(64 * 64 + 21);
+    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 20}));
+
+    column.set_xor(64 * 64 + 20);
+    column.set_xor(17);
+    ASSERT_EQ(column.debug_export_column(), (C{}));
+  }
 }
 
 using rng = std::minstd_rand0;
@@ -124,7 +167,7 @@ TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
   bit_tree_column bt_column(p.num_simplices);
 
   bt_column.import_column(column);
-  ASSERT_EQ(bt_column.export_column(), column);
+  ASSERT_EQ(bt_column.debug_export_column(), column);
 }
 
 TEST_P(BitTreeColumnTest, ExportAndClearColumn) {
@@ -153,51 +196,9 @@ TEST_P(BitTreeColumnTest, Add) {
   bt_column.import_column(column_1);
   bt_column.add(column_2);
   
-  ASSERT_EQ(bt_column.export_column(), expected);
+  ASSERT_EQ(bt_column.debug_export_column(), expected);
 }
 
-TEST_P(BitTreeColumnTest, SetXor) {
-  using namespace mphhc;
-  using C = mphhc::column;
-  
-  BitTreeColumnTestParams const &p = GetParam();
-  bit_tree_column column(p.num_simplices);
-
-  column.set_xor(29);
-  ASSERT_EQ(column.export_column(), (C{29}));
-  column.set_xor(17);
-  ASSERT_EQ(column.export_column(), (C{17, 29}));
-
-  column.set_xor(29);
-  ASSERT_EQ(column.export_column(), (C{17}));
-
-  column.set_xor(17);
-  ASSERT_EQ(column.export_column(), (C{}));
-
-  if (p.num_simplices > 64 * 64) {
-    column.set_xor(17);
-    ASSERT_EQ(column.export_column(), (C{17}));
-
-    column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 21}));
-    
-    column.set_xor(64 * 32 + 31);
-    ASSERT_EQ(column.export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21}));
-    column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
-    column.set_xor(64 * 32 + 31);
-    column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 21}));
-
-    column.set_xor(64 * 64 + 20);
-    column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.export_column(), (C{17, 64 * 64 + 20}));
-
-    column.set_xor(64 * 64 + 20);
-    column.set_xor(17);
-    ASSERT_EQ(column.export_column(), (C{}));
-  }
-}
 
 TEST(BoundaryMatrixTest, Reduce) {
   using C = mphhc::column;
