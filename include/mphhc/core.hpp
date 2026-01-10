@@ -65,6 +65,15 @@ class bitset64 {
   
 class bit_tree_column {
   static const uint64_t MASK = (1 << 6) - 1;
+
+  static constexpr int NODE_BLOCK_SIZE_TABLE[6] = {
+    -1,
+    0,
+    1,
+    1 + (1<<6),
+    1 + (1<<6) + (1<<12),
+    1 + (1<<6) + (1<<12) + (1<<18)
+  };
   
   std::vector<bitset64> data_;
   int num_index_;

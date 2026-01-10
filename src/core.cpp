@@ -176,14 +176,7 @@ int bit_tree_column::compute_height(int num_index) {
 
 int bit_tree_column::compute_data_size(int height, int num_level) {
   assert(height >= 1 && height <= 5);
-  static int node_size[6] = {
-    0,
-    1,
-    1 + (1<<6),
-    1 + (1<<6) + (1<<12),
-    1 + (1<<6) + (1<<12) + (1<<18),
-  };
-  return node_size[height - 1] + (num_level + 63) / 64;
+  return NODE_BLOCK_SIZE_TABLE[height] + (num_level + 63) / 64;
 }
 
 bit_tree_column::bit_tree_column(int num_index) {
