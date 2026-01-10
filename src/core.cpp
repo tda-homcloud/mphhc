@@ -109,7 +109,6 @@ void boundary_matrix::reduce_twist() {
   bit_tree_column bt_column(num_simplices());
   
   for (int d = max_dim(); d >= 1; --d) {
-    // std::unordered_map<index, index> pivot_table;
     std::vector<index> pivot_table(columns_[d - 1].size(), -1);
     
     for (index i = 0; i < columns_[d].size(); ++i) {
