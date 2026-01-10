@@ -123,10 +123,11 @@ void boundary_matrix::reduce_twist() {
       
       bt_column.import_column(columns_[d][i]);
 
-      index m;
-      while ((m = pivot_table[bt_column.max()]) != -1) {
+      index m, mx;
+      while ((mx = bt_column.max()) != -1 && (m = pivot_table[mx]) != -1) {
         bt_column.add(columns_[d][m]);
       }
+
       bt_column.export_and_clear_column(&columns_[d][i]);
       if (!columns_[d][i].empty()) {
         index L = columns_[d][i].back();
