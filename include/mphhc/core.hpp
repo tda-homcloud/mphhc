@@ -140,6 +140,7 @@ class bit_tree_column {
   }
 
   column export_column() const;
+  void export_and_clear_column(column* col);
 };
 
 }

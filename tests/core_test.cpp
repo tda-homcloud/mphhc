@@ -105,7 +105,7 @@ TEST_P(BitTreeColumnTest, SetAndExportColumn) {
 
 using rng = std::minstd_rand0;
 
-column random_column(rng* rng, int num_simplices, int num_samples) {
+column generate_random_column(rng* rng, int num_simplices, int num_samples) {
   std::set<mphhc::index> indices;
   std::uniform_int_distribution<> dist(0, num_simplices - 1);
 
@@ -120,19 +120,32 @@ column random_column(rng* rng, int num_simplices, int num_samples) {
 TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
   BitTreeColumnTestParams const &p = GetParam();
   std::minstd_rand0 rng(7438911);
-  column column = random_column(&rng, p.num_simplices, 400);
+  column column = generate_random_column(&rng, p.num_simplices, 400);
   bit_tree_column bt_column(p.num_simplices);
 
   bt_column.import_column(column);
   ASSERT_EQ(bt_column.export_column(), column);
 }
 
+TEST_P(BitTreeColumnTest, ExportAndClearColumn) {
+  BitTreeColumnTestParams const &p = GetParam();
+  std::minstd_rand0 rng(7438911);
+  column random_column = generate_random_column(&rng, p.num_simplices, 400);
+  bit_tree_column bt_column(p.num_simplices);
+  column exported_column;
+
+  bt_column.import_column(random_column);
+  bt_column.export_and_clear_column(&exported_column);
+  ASSERT_EQ(exported_column, random_column);
+  ASSERT_TRUE(bt_column.none());
+}
+
 TEST_P(BitTreeColumnTest, Add) {
   BitTreeColumnTestParams const &p = GetParam();
   std::minstd_rand0 rng(7438911);
 
-  column column_1 = random_column(&rng, p.num_simplices, 400);
-  column column_2 = random_column(&rng, p.num_simplices, 400);
+  column column_1 = generate_random_column(&rng, p.num_simplices, 400);
+  column column_2 = generate_random_column(&rng, p.num_simplices, 400);
   column expected;
   std::set_symmetric_difference(column_1.begin(), column_1.end(), column_2.begin(), column_2.end(),
                                 std::back_inserter(expected));

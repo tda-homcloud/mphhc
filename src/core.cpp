@@ -205,6 +205,10 @@ void bit_tree_column::set(index i) {
   }
 
   data_[r].set(i & MASK);
+void bit_tree_column::export_and_clear_column(column* col) {
+  column r = export_column();
+  col->swap(r);
+  clear();
 }
 
 column bit_tree_column::export_column() const {
