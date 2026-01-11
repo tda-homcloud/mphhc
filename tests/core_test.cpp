@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 #define MPHHC_UNITTEST
-#include "mphhc/core.hpp"
-#include <vector>
-#include <random>
 #include <iterator>
+#include <random>
+#include <vector>
+
+#include "mphhc/core.hpp"
 
 using namespace mphhc;
 
@@ -38,31 +39,26 @@ TEST(BitTreeColumnStaticFunctionTest, ComputeDataSize) {
   ASSERT_EQ(bit_tree_column::compute_data_size(2, 191), 4);
   ASSERT_EQ(bit_tree_column::compute_data_size(5, 64 * 64 * 64 * 64 * 63),
             1 + 64 + (64 * 64) + (64 * 64 * 64) + (64 * 64 * 64 * 63));
-            
 }
 
 struct BitTreeColumnTestParams {
   int num_simplices;
 
-  friend void PrintTo(const BitTreeColumnTestParams& p, std::ostream* os) {
-    *os << "{ num_simplices: " << p.num_simplices << " }"; 
+  friend void PrintTo(const BitTreeColumnTestParams &p, std::ostream *os) {
+    *os << "{ num_simplices: " << p.num_simplices << " }";
   }
 };
 
-class BitTreeColumnTest : public ::testing::TestWithParam<BitTreeColumnTestParams> {
-};
+class BitTreeColumnTest
+    : public ::testing::TestWithParam<BitTreeColumnTestParams> {};
 
 INSTANTIATE_TEST_SUITE_P(
-    BitTreeColumnTestParameters,
-    BitTreeColumnTest,
-    ::testing::Values(
-         BitTreeColumnTestParams{48},
-         BitTreeColumnTestParams{64 * 48},
-         BitTreeColumnTestParams{64 * 64 * 48},
-         BitTreeColumnTestParams{64 * 64 * 64 * 48},
-         BitTreeColumnTestParams{64 * 64 * 64 * 64 * 48}
-    )
-);
+    BitTreeColumnTestParameters, BitTreeColumnTest,
+    ::testing::Values(BitTreeColumnTestParams{48},
+                      BitTreeColumnTestParams{64 * 48},
+                      BitTreeColumnTestParams{64 * 64 * 48},
+                      BitTreeColumnTestParams{64 * 64 * 64 * 48},
+                      BitTreeColumnTestParams{64 * 64 * 64 * 64 * 48}));
 
 TEST_P(BitTreeColumnTest, SetAndMax) {
   using namespace mphhc;
@@ -70,7 +66,7 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
   bit_tree_column column(p.num_simplices);
 
   ASSERT_EQ(column.max(), -1);
-  
+
   column.set(29);
   column.set(17);
   ASSERT_EQ(column.max(), 29);
@@ -78,7 +74,7 @@ TEST_P(BitTreeColumnTest, SetAndMax) {
   if (p.num_simplices > 64 * 64) {
     column.set(64 * 64 + 34);
     column.set(64 * 64 + 127);
-    column.set(64  + 130);
+    column.set(64 + 130);
     ASSERT_EQ(column.max(), 64 * 64 + 127);
   }
 }
@@ -98,15 +94,16 @@ TEST_P(BitTreeColumnTest, Set) {
 
   if (p.num_simplices <= 64) return;
 
-  column.set((32<<6) + 12);
-  column.set((32<<6) + 191);
-  ASSERT_EQ(column.debug_export_column(), (C{17, 29, 63, (32<<6) + 12, (32<<6) + 191}));
+  column.set((32 << 6) + 12);
+  column.set((32 << 6) + 191);
+  ASSERT_EQ(column.debug_export_column(),
+            (C{17, 29, 63, (32 << 6) + 12, (32 << 6) + 191}));
 }
 
 TEST_P(BitTreeColumnTest, SetXor) {
   using namespace mphhc;
   using C = mphhc::column;
-  
+
   BitTreeColumnTestParams const &p = GetParam();
   bit_tree_column column(p.num_simplices);
 
@@ -127,11 +124,13 @@ TEST_P(BitTreeColumnTest, SetXor) {
 
     column.set_xor(64 * 64 + 21);
     ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
-    
+
     column.set_xor(64 * 32 + 31);
-    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21}));
+    ASSERT_EQ(column.debug_export_column(),
+              (C{17, 64 * 32 + 31, 64 * 64 + 21}));
     column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
+    ASSERT_EQ(column.debug_export_column(),
+              (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
     column.set_xor(64 * 32 + 31);
     column.set_xor(64 * 64 + 191);
     ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
@@ -148,7 +147,7 @@ TEST_P(BitTreeColumnTest, SetXor) {
 
 using rng = std::minstd_rand0;
 
-column generate_random_column(rng* rng, int num_simplices, int num_samples) {
+column generate_random_column(rng *rng, int num_simplices, int num_samples) {
   std::set<mphhc::index> indices;
   std::uniform_int_distribution<> dist(0, num_simplices - 1);
 
@@ -190,15 +189,15 @@ TEST_P(BitTreeColumnTest, Add) {
   column column_1 = generate_random_column(&rng, p.num_simplices, 400);
   column column_2 = generate_random_column(&rng, p.num_simplices, 400);
   column expected;
-  std::set_symmetric_difference(column_1.begin(), column_1.end(), column_2.begin(), column_2.end(),
+  std::set_symmetric_difference(column_1.begin(), column_1.end(),
+                                column_2.begin(), column_2.end(),
                                 std::back_inserter(expected));
   bit_tree_column bt_column(p.num_simplices);
   bt_column.import_column(column_1);
   bt_column.add(column_2);
-  
+
   ASSERT_EQ(bt_column.debug_export_column(), expected);
 }
-
 
 TEST(BoundaryMatrixTest, ReduceStandard) {
   using C = mphhc::column;
@@ -219,12 +218,7 @@ TEST(BoundaryMatrixTest, ReduceStandard) {
 
   std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
   std::vector<birth_death_pair> expected = {
-    {0, 1, 2},
-    {0, 4, 5},
-    {0, 3, 6},
-    {1, 8, 9},
-    {1, 7, 10},
-    {0, 0, -1},
+      {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
 
   std::sort(pairs.begin(), pairs.end());
@@ -251,12 +245,7 @@ TEST(BoundaryMatrixTest, ReduceTwist) {
 
   std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
   std::vector<birth_death_pair> expected = {
-    {0, 1, 2},
-    {0, 4, 5},
-    {0, 3, 6},
-    {1, 8, 9},
-    {1, 7, 10},
-    {0, 0, -1},
+      {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
 
   std::sort(pairs.begin(), pairs.end());
@@ -284,17 +273,8 @@ TEST(BoundaryMatrixTest, ReduceStandardWithBasis) {
   auto basis = bm.basis();
 
   std::vector<column> expected = {
-    C{0},
-    C{1},
-    C{2},
-    C{3},
-    C{4},
-    C{5},
-    C{6},
-    C{2, 5, 6, 7},
-    C{5, 6, 8},
-    C{9},
-    C{9, 10},
+      C{0}, C{1},          C{2},       C{3}, C{4},     C{5},
+      C{6}, C{2, 5, 6, 7}, C{5, 6, 8}, C{9}, C{9, 10},
   };
 
   ASSERT_EQ(basis, expected);
