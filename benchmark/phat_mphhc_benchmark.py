@@ -38,7 +38,9 @@ def benchmark_alpha_filtration(repeat, num_points):
     ptimes_2 = []
     ptimes_3 = []
     for _ in range(repeat):
-        index_to_simplex, simplex_to_index = alpha_filtration_from_uniform_random_points(rng, num_points)
+        index_to_simplex, simplex_to_index = (
+            alpha_filtration_from_uniform_random_points(rng, num_points)
+        )
         m1 = phat.Matrix(len(index_to_simplex), "none")
         m2 = mphhc.Matrix(3)
         m3 = mphhc.Matrix(3)
@@ -56,9 +58,16 @@ def benchmark_alpha_filtration(repeat, num_points):
         # print(set(m1.birth_death_pairs()) ^ set(m3.birth_death_pairs()))
         # assert set(m1.birth_death_pairs()) == set(m2.birth_death_pairs())
 
-    print("phat:", np.mean(ptimes_1), "mphhc-twist:", np.mean(ptimes_2), "mphhc-standard:", np.mean(ptimes_3))
+    print(
+        "phat:",
+        np.mean(ptimes_1),
+        "mphhc-twist:",
+        np.mean(ptimes_2),
+        "mphhc-standard:",
+        np.mean(ptimes_3),
+    )
 
-    
+
 def cubical_filtration(rng, size):
     array = np.random.uniform(0, 1, size=size)
     filtration = CubicalFiltrationExt(array, [False, False, False], True)
