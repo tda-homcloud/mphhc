@@ -176,6 +176,44 @@ static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
     return list;
 }
 
+static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
+    if (!ensure_bm_initialized(self)) return NULL;
+
+    if (!self->bm->is_reduced()) {
+        PyErr_SetString(PyExc_RuntimeError, "Matrix must be reduced before calling basis.");
+        return NULL;
+    }
+
+    if (!self->bm->is_save_basis()) {
+        PyErr_SetString(PyExc_RuntimeError, "save_basis must be True to retrieve basis.");
+        return NULL;
+    }
+
+    std::vector<mphhc::column> basis = self->bm->basis();
+
+    PyObject* list = PyList_New(basis.size());
+    if (!list) return NULL;
+
+    for (size_t i = 0; i < basis.size(); ++i) {
+        PyObject* col_list = PyList_New(basis[i].size());
+        if (!col_list) {
+            Py_DECREF(list);
+            return NULL;
+        }
+        for (size_t j = 0; j < basis[i].size(); ++j) {
+            PyObject* val = PyLong_FromLong(basis[i][j]);
+            if (!val) {
+                Py_DECREF(col_list);
+                Py_DECREF(list);
+                return NULL;
+            }
+            PyList_SetItem(col_list, j, val);
+        }
+        PyList_SetItem(list, i, col_list);
+    }
+    return list;
+}
+
 static PyMethodDef Matrix_methods[] = {
     {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS, "Return number of simplices"},
@@ -185,6 +223,7 @@ static PyMethodDef Matrix_methods[] = {
     {"reduce_standard", (PyCFunction)Matrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
     {"reduce_twist", (PyCFunction)Matrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},
     {"birth_death_pairs", (PyCFunction)Matrix_birth_death_pairs, METH_NOARGS, "Get birth-death pairs"},
+    {"basis", (PyCFunction)Matrix_basis, METH_NOARGS, "Get basis"},
     {NULL}  /* Sentinel */
 };
 
