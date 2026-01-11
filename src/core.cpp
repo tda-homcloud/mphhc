@@ -73,82 +73,153 @@ bool boundary_matrix::is_reduced() const {
   return reduced_;
 }
 
+class standard_algorithm {
+  int max_dim_;
+  bit_tree_column bt_column_;
+  std::vector<std::vector<column>>& columns_;
+  bool save_basis_;
+  bit_tree_column basis_column_;
+  std::vector<std::vector<column>>& basis_;
+  
+ public:
+  standard_algorithm(int num_simplices,
+                     std::vector<std::vector<column>>& columns,
+                     bool save_basis,
+                     std::vector<std::vector<column>>& basis):
+      max_dim_(columns.size() - 1),
+      bt_column_(num_simplices),
+      columns_(columns),
+      save_basis_(save_basis),
+      basis_column_(save_basis ? num_simplices : 0),
+      basis_(basis)
+  {
+  }
+
+  inline void record_pivot(int d, int i, std::vector<index>& pivot_table) {
+    index L = columns_[d][i].back();
+    pivot_table[L] = i;
+  }
+
+  inline void record_basis_vector(int d) {
+    if (save_basis_) {
+      basis_[d].emplace_back();
+      basis_column_.export_and_clear_column(&basis_[d].back());
+    }
+  }
+
+  inline void record_simple_basis_vector(int d, int i) {
+    if (save_basis_)
+      basis_[d].push_back(std::vector<index>{i});
+  }
+
+  inline bool reduced(int d, int i, const std::vector<index>& pivot_table) {
+    return pivot_table[columns_[d][i].back()] == -1;
+  }
+
+  inline void init_basis_column(int i) {
+    if (save_basis_)
+      basis_column_.set(i);
+  }
+  
+  void run() {
+    for (int d = max_dim_; d >= 1; --d) {
+      std::vector<index> pivot_table(columns_[d - 1].size(), -1);
+    
+      for (index i = 0; i < columns_[d].size(); ++i) {
+        if (columns_[d][i].empty()) {
+          record_simple_basis_vector(d, i);
+          continue;
+        }
+        if (reduced(d, i, pivot_table)) {
+          record_pivot(d, i, pivot_table);
+          record_simple_basis_vector(d, i);
+          continue;
+        }
+      
+        bt_column_.import_column(columns_[d][i]);
+        init_basis_column(i);
+
+        index m, mx;
+        while ((mx = bt_column_.max()) != -1 && (m = pivot_table[mx]) != -1) {
+          bt_column_.add(columns_[d][m]);
+          if (save_basis_) basis_column_.add(basis_[d][m]);
+        }
+
+        bt_column_.export_and_clear_column(&columns_[d][i]);
+        record_basis_vector(d);
+
+        if (!columns_[d][i].empty()) {
+          record_pivot(d, i, pivot_table);
+        }
+      }
+    }
+  }
+};
+
 void boundary_matrix::reduce_standard() {
   if (reduced_)
     return;
 
-  bit_tree_column bt_column(num_simplices());
-  bit_tree_column basis_column(save_basis_ ? num_simplices() : 1);
-  
-  for (int d = 1; d <= max_dim(); ++d) {
-    std::vector<index> pivot_table(columns_[d - 1].size(), -1);
-    
-    for (index i = 0; i < columns_[d].size(); ++i) {
-      if (columns_[d][i].empty())
-        continue;
-      if (pivot_table[columns_[d][i].back()] == -1) {
-        index L = columns_[d][i].back();
-        pivot_table[L] = i;
-        if (save_basis_) basis_[d].push_back(std::vector<index>{i});
-        continue;
-      }
-      
-      bt_column.import_column(columns_[d][i]);
-      if (save_basis_) basis_column.set(i);
-
-      index m, mx;
-      while ((mx = bt_column.max()) != -1 && (m = pivot_table[mx]) != -1) {
-        bt_column.add(columns_[d][m]);
-        if (save_basis_) basis_column.add(basis_[d][m]);
-      }
-
-      bt_column.export_and_clear_column(&columns_[d][i]);
-      if (save_basis_) {
-        basis_[d].emplace_back();
-        basis_column.export_and_clear_column(&basis_[d].back());
-      }
-              
-      if (!columns_[d][i].empty()) {
-        index L = columns_[d][i].back();
-        pivot_table[L] = i;
-      }
-
-    }
-  }
+  standard_algorithm algorithm(num_simplices(), columns_, save_basis_, basis_);
+  algorithm.run();
 
   reduced_ = true;
 }
+
+class twist_algorithm {
+  int max_dim_;
+  bit_tree_column bt_column_;
+  std::vector<std::vector<column>>& columns_;
+
+ public:
+  twist_algorithm(int num_simplices, std::vector<std::vector<column>>& columns):
+      max_dim_(columns.size() - 1),
+      bt_column_(num_simplices),
+      columns_(columns) {
+  }
+
+  inline void record_pivot(int d, int i, std::vector<index>& pivot_table) {
+    index L = columns_[d][i].back();
+    pivot_table[L] = i;
+    columns_[d - 1][L].clear();
+  }
+
+  void run() {
+    for (int d = max_dim_; d >= 1; --d) {
+      std::vector<index> pivot_table(columns_[d - 1].size(), -1);
+    
+      for (index i = 0; i < columns_[d].size(); ++i) {
+        if (columns_[d][i].empty())
+          continue;
+        if (pivot_table[columns_[d][i].back()] == -1) {
+          record_pivot(d, i, pivot_table);
+          continue;
+        }
+      
+        bt_column_.import_column(columns_[d][i]);
+
+        index m, mx;
+        while ((mx = bt_column_.max()) != -1 && (m = pivot_table[mx]) != -1) {
+          bt_column_.add(columns_[d][m]);
+        }
+
+        bt_column_.export_and_clear_column(&columns_[d][i]);
+        if (!columns_[d][i].empty()) {
+          record_pivot(d, i, pivot_table);
+        }
+      }
+    }
+    
+  }
+};
+
 
 void boundary_matrix::reduce_twist() {
   if (reduced_)
     return;
 
-  bit_tree_column bt_column(num_simplices());
-
-  for (int d = max_dim(); d >= 1; --d) {
-    std::vector<index> pivot_table(columns_[d - 1].size(), -1);
-    
-    for (index i = 0; i < columns_[d].size(); ++i) {
-      if (columns_[d][i].empty())
-        continue;
-      if (pivot_table[columns_[d][i].back()] == -1) {
-        record_pivot_twist(d, i, pivot_table);
-        continue;
-      }
-      
-      bt_column.import_column(columns_[d][i]);
-
-      index m, mx;
-      while ((mx = bt_column.max()) != -1 && (m = pivot_table[mx]) != -1) {
-        bt_column.add(columns_[d][m]);
-      }
-
-      bt_column.export_and_clear_column(&columns_[d][i]);
-      if (!columns_[d][i].empty()) {
-        record_pivot_twist(d, i, pivot_table);
-      }
-    }
-  }
+  twist_algorithm algorithm(num_simplices(), columns_);
+  algorithm.run();
   
   reduced_ = true;
 }
