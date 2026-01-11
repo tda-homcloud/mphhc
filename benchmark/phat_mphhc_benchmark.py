@@ -52,7 +52,8 @@ def benchmark_alpha_filtration(repeat, num_points):
         ptimes_1.append(run(m1.reduce_twist))
         ptimes_2.append(run(m2.reduce_twist))
         ptimes_3.append(run(m3.reduce_standard))
-        print(set(m1.birth_death_pairs()) ^ set(m2.birth_death_pairs()))
+        # print(set(m1.birth_death_pairs()) ^ set(m2.birth_death_pairs()))
+        # print(set(m1.birth_death_pairs()) ^ set(m3.birth_death_pairs()))
         # assert set(m1.birth_death_pairs()) == set(m2.birth_death_pairs())
 
     print("phat:", np.mean(ptimes_1), "mphhc-twist:", np.mean(ptimes_2), "mphhc-standard:", np.mean(ptimes_3))
@@ -85,6 +86,8 @@ def benchmark_random_3d_cubical(repeat, size):
 
 
 benchmark_alpha_filtration(repeat=5, num_points=10000)
+# phat: 0.021183716505765914 mphhc-twist: 0.012243387848138809 mphhc-standard: 0.1491922608576715
 # benchmark_alpha_filtration(repeat=5, num_points=100000)
-# benchmark_random_3d_cubical(repeat=5, size=(50, 50, 50))
+benchmark_random_3d_cubical(repeat=5, size=(50, 50, 50))
+# phat: 0.13374500460922717 mphhc: 0.09117477238178254
 # benchmark_random_3d_cubical(repeat=5, size=(100, 100, 100))
