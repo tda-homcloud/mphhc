@@ -218,6 +218,8 @@ void boundary_matrix::reduce_twist() {
   if (reduced_)
     return;
 
+  assert(!save_basis_);
+
   twist_algorithm algorithm(num_simplices(), columns_);
   algorithm.run();
   
@@ -250,7 +252,7 @@ std::vector<birth_death_pair> boundary_matrix::birth_death_pairs() const {
 }
 
 std::vector<column> boundary_matrix::basis() const {
-  assert(reduced_);
+  assert(reduced_ && save_basis_);
 
   std::vector<column> ret;
 
