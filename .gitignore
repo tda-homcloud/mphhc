@@ -4,25 +4,8 @@ bin/
 lib/
 out/
 
-# --- CMake generated files ---
-CMakeCache.txt
-CMakeFiles/
-CMakeScripts/
-cmake_install.cmake
-install_manifest.txt
-Makefile
-_deps/                # FetchContent でダウンロードされたソース用
-
 # --- Compiled files ---
-*.o
-*.obj
-*.a
-*.lib
 *.so
-*.dylib
-*.dll
-*.exe
-*.pdb
 
 # --- IDE specific ---
 # VS Code
