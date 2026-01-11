@@ -1,6 +1,7 @@
 import mphhc
 import pytest
 
+
 def test_Matrix_reduce():
     bm = mphhc.Matrix(2)
     bm.set_dim_col(0, 0, [])
@@ -17,7 +18,7 @@ def test_Matrix_reduce():
 
     bm.reduce_twist()
     assert bm.is_reduced() is True
-    
+
     pairs = bm.birth_death_pairs()
     # Python returns list of (dim, birth, death) tuples
     expected = [
@@ -28,7 +29,7 @@ def test_Matrix_reduce():
         (1, 7, 10),
         (0, 0, None),
     ]
-    
+
     assert sorted(pairs) == sorted(expected)
 
 
@@ -36,7 +37,7 @@ def test_is_save_basis():
     # Default should be False
     bm1 = mphhc.Matrix(3)
     assert bm1.is_save_basis() is False
-    
+
     # Explicit False
     bm2 = mphhc.Matrix(3, save_basis=False)
     assert bm2.is_save_basis() is False
@@ -60,10 +61,10 @@ def test_reduce_standard_basis_computation():
     bm.set_dim_col(8, 1, [1, 4])
     bm.set_dim_col(9, 2, [5, 6, 8])
     bm.set_dim_col(10, 2, [2, 7, 8])
-    
+
     bm.reduce_standard()
     basis = bm.basis()
-    
+
     expected = [
         [0],
         [1],
@@ -77,8 +78,5 @@ def test_reduce_standard_basis_computation():
         [9],
         [9, 10],
     ]
-    
+
     assert basis == expected
-
-
-
