@@ -124,7 +124,7 @@ void boundary_matrix::reduce_twist() {
     return;
 
   bit_tree_column bt_column(num_simplices());
-  
+
   for (int d = max_dim(); d >= 1; --d) {
     std::vector<index> pivot_table(columns_[d - 1].size(), -1);
     
@@ -132,9 +132,7 @@ void boundary_matrix::reduce_twist() {
       if (columns_[d][i].empty())
         continue;
       if (pivot_table[columns_[d][i].back()] == -1) {
-        index L = columns_[d][i].back();
-        pivot_table[L] = i;
-        columns_[d - 1][L].clear();
+        record_pivot_twist(d, i, pivot_table);
         continue;
       }
       
@@ -147,9 +145,7 @@ void boundary_matrix::reduce_twist() {
 
       bt_column.export_and_clear_column(&columns_[d][i]);
       if (!columns_[d][i].empty()) {
-        index L = columns_[d][i].back();
-        pivot_table[L] = i;
-        columns_[d - 1][L].clear();
+        record_pivot_twist(d, i, pivot_table);
       }
     }
   }

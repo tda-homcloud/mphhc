@@ -34,7 +34,14 @@ class boundary_matrix {
   std::vector<std::vector<index>> local_to_global_index_;
   std::vector<index_info> global_to_local_index_;
   bool reduced_;
-  
+  bool save_basis_;
+
+  inline void record_pivot_twist(int d, int i, std::vector<index>& pivot_table) {
+    index L = columns_[d][i].back();
+    pivot_table[L] = i;
+    columns_[d - 1][L].clear();
+  }
+
  public:
   boundary_matrix(int maxdim, bool save_basis=false);
   int max_dim() const;
