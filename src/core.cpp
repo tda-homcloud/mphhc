@@ -30,10 +30,12 @@ void PrintTo(const birth_death_pair& pair, std::ostream* os) {
 }
 
 
-boundary_matrix::boundary_matrix(int maxdim):
+boundary_matrix::boundary_matrix(int maxdim, bool save_basis):
     columns_(maxdim + 1),
+    basis_(maxdim + 1),
     local_to_global_index_(maxdim + 1),
-    reduced_(false)
+    reduced_(false),
+    save_basis_(save_basis)
 {
 }
 
@@ -76,6 +78,7 @@ void boundary_matrix::reduce_standard() {
     return;
 
   bit_tree_column bt_column(num_simplices());
+  bit_tree_column basis_column(save_basis_ ? num_simplices() : 1);
   
   for (int d = 1; d <= max_dim(); ++d) {
     std::vector<index> pivot_table(columns_[d - 1].size(), -1);
@@ -86,20 +89,30 @@ void boundary_matrix::reduce_standard() {
       if (pivot_table[columns_[d][i].back()] == -1) {
         index L = columns_[d][i].back();
         pivot_table[L] = i;
+        if (save_basis_) basis_[d].push_back(std::vector<index>{i});
         continue;
       }
       
       bt_column.import_column(columns_[d][i]);
+      if (save_basis_) basis_column.set(i);
 
       index m, mx;
       while ((mx = bt_column.max()) != -1 && (m = pivot_table[mx]) != -1) {
         bt_column.add(columns_[d][m]);
+        if (save_basis_) basis_column.add(basis_[d][m]);
       }
+
       bt_column.export_and_clear_column(&columns_[d][i]);
+      if (save_basis_) {
+        basis_[d].emplace_back();
+        basis_column.export_and_clear_column(&basis_[d].back());
+      }
+              
       if (!columns_[d][i].empty()) {
         index L = columns_[d][i].back();
         pivot_table[L] = i;
       }
+
     }
   }
 
@@ -167,6 +180,28 @@ std::vector<birth_death_pair> boundary_matrix::birth_death_pairs() const {
       pairs.emplace_back(global_to_local_index_[i].dim, i, -1);
   }
   return pairs;
+}
+
+std::vector<column> boundary_matrix::basis() const {
+  assert(reduced_);
+
+  std::vector<column> ret;
+
+  for (index i = 0; i < num_simplices(); ++i) {
+    index_info t = global_to_local_index_[i];
+    if (t.dim == 0) {
+      ret.push_back(column{i});
+      continue;
+    }
+      
+    column basis_col;
+    for (index local_index: basis_[t.dim][t.nth]) {
+      basis_col.push_back(local_to_global_index_[t.dim][local_index]);
+    }
+    ret.push_back(std::move(basis_col));
+  }
+
+  return ret;
 }
 
 int bit_tree_column::compute_height(int num_index) {

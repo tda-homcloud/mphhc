@@ -263,3 +263,39 @@ TEST(BoundaryMatrixTest, ReduceTwist) {
   std::sort(expected.begin(), expected.end());
   ASSERT_EQ(pairs, expected);
 }
+
+TEST(BoundaryMatrixTest, ReduceStandardWithBasis) {
+  using C = mphhc::column;
+  boundary_matrix bm(2, true);
+
+  bm.set_dim_col(0, 0, C{});
+  bm.set_dim_col(1, 0, C{});
+  bm.set_dim_col(2, 1, C{0, 1});
+  bm.set_dim_col(3, 0, C{});
+  bm.set_dim_col(4, 0, C{});
+  bm.set_dim_col(5, 1, C{3, 4});
+  bm.set_dim_col(6, 1, C{1, 3});
+  bm.set_dim_col(7, 1, C{0, 4});
+  bm.set_dim_col(8, 1, C{1, 4});
+  bm.set_dim_col(9, 2, C{5, 6, 8});
+  bm.set_dim_col(10, 2, C{2, 7, 8});
+  bm.reduce_standard();
+
+  auto basis = bm.basis();
+
+  std::vector<column> expected = {
+    C{0},
+    C{1},
+    C{2},
+    C{3},
+    C{4},
+    C{5},
+    C{6},
+    C{2, 5, 6, 7},
+    C{5, 6, 8},
+    C{9},
+    C{9, 10},
+  };
+
+  ASSERT_EQ(basis, expected);
+}

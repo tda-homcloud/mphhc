@@ -30,12 +30,13 @@ class boundary_matrix {
   };
   
   std::vector<std::vector<column>> columns_;
+  std::vector<std::vector<column>> basis_;
   std::vector<std::vector<index>> local_to_global_index_;
   std::vector<index_info> global_to_local_index_;
   bool reduced_;
   
  public:
-  boundary_matrix(int maxdim);
+  boundary_matrix(int maxdim, bool save_basis=false);
   int max_dim() const;
   index set_dim_col(index i, int dim, column&& col);
   index set_dim_col(index i, int dim, const column& col);
@@ -45,6 +46,7 @@ class boundary_matrix {
   void reduce_standard();
   void reduce_twist();
   std::vector<birth_death_pair> birth_death_pairs() const;
+  std::vector<column> basis() const;
 };
 
 class bitset64 {
