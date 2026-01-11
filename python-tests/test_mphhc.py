@@ -36,3 +36,17 @@ def test_Matrix_reduce():
     expected.sort()
     
     assert pairs == expected
+
+def test_is_save_basis():
+    # Default should be False
+    bm1 = mphhc.Matrix(3)
+    assert bm1.is_save_basis() is False
+    
+    # Explicit False
+    bm2 = mphhc.Matrix(3, save_basis=False)
+    assert bm2.is_save_basis() is False
+
+    # Explicit True
+    bm3 = mphhc.Matrix(3, save_basis=True)
+    assert bm3.is_save_basis() is True
+

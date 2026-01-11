@@ -40,11 +40,14 @@ static PyObject* Matrix_new(PyTypeObject* type, PyObject* args, PyObject* kwds) 
 
 static int Matrix_init(MatrixObject* self, PyObject* args, PyObject* kwds) {
     int maxdim;
-    if (!PyArg_ParseTuple(args, "i", &maxdim)) {
+    int save_basis = 0; // default false
+    static char* kwlist[] = {(char*)"maxdim", (char*)"save_basis", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|p", kwlist, &maxdim, &save_basis)) {
         return -1;
     }
     try {
-        self->bm = new mphhc::boundary_matrix(maxdim);
+        self->bm = new mphhc::boundary_matrix(maxdim, save_basis);
     } catch (...) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to create boundary_matrix instance");
         return -1;
@@ -73,6 +76,15 @@ static PyObject* Matrix_num_simplices(MatrixObject* self, PyObject* args) {
 static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
     if (!ensure_bm_initialized(self)) return NULL;
     if (self->bm->is_reduced()) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
+
+static PyObject* Matrix_is_save_basis(MatrixObject* self, PyObject* args) {
+    if (!ensure_bm_initialized(self)) return NULL;
+    if (self->bm->is_save_basis()) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;
@@ -168,6 +180,7 @@ static PyMethodDef Matrix_methods[] = {
     {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS, "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS, "Return whether the matrix is reduced"},
+    {"is_save_basis", (PyCFunction)Matrix_is_save_basis, METH_NOARGS, "Return whether the matrix saves basis"},
     {"set_dim_col", (PyCFunction)Matrix_set_dim_col, METH_VARARGS, "Add a column for a dimension"},
     {"reduce_standard", (PyCFunction)Matrix_reduce_standard, METH_NOARGS, "Perform standard reduction"},
     {"reduce_twist", (PyCFunction)Matrix_reduce_twist, METH_NOARGS, "Perform twist reduction"},

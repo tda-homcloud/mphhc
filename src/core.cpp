@@ -73,6 +73,10 @@ bool boundary_matrix::is_reduced() const {
   return reduced_;
 }
 
+bool boundary_matrix::is_save_basis() const {
+  return save_basis_;
+}
+
 class standard_algorithm {
   int max_dim_;
   bit_tree_column bt_column_;
