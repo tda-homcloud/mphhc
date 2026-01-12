@@ -3,10 +3,8 @@
 #include <algorithm>
 #include <boost/core/bit.hpp>
 #include <cassert>
-#include <deque>
 #include <iostream>
 #include <tuple>
-#include <unordered_map>
 
 namespace mphhc {
 
