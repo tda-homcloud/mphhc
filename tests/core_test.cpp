@@ -10,34 +10,34 @@ using namespace mphhc;
 
 TEST(BoundaryMatrixTest, AddDimCol) {
   using namespace mphhc;
-  boundary_matrix boundary_matrix(2);
+  BoundaryMatrix boundary_matrix(2);
 
-  boundary_matrix.set_dim_col(0, 0, column{});
-  boundary_matrix.set_dim_col(1, 0, column{});
-  boundary_matrix.set_dim_col(2, 1, column{0, 1});
+  boundary_matrix.SetMimCol(0, 0, Column{});
+  boundary_matrix.SetMimCol(1, 0, Column{});
+  boundary_matrix.SetMimCol(2, 1, Column{0, 1});
 
-  ASSERT_EQ(boundary_matrix.num_simplices(), 3);
+  ASSERT_EQ(boundary_matrix.NumSimplices(), 3);
 }
 
 TEST(BitTreeColumnStaticFunctionTest, ComputeHeight) {
   using namespace mphhc;
 
-  ASSERT_EQ(bit_tree_column::compute_height(64), 1);
-  ASSERT_EQ(bit_tree_column::compute_height(65), 2);
-  ASSERT_EQ(bit_tree_column::compute_height(64 * 64), 2);
-  ASSERT_EQ(bit_tree_column::compute_height(64 * 64 + 1), 3);
-  ASSERT_EQ(bit_tree_column::compute_height(64 * 64 * 64 * 64 * 64), 5);
-  ASSERT_EQ(bit_tree_column::compute_height(64 * 64 * 64 * 64 * 64 + 1), -1);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(64), 1);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(65), 2);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(64 * 64), 2);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(64 * 64 + 1), 3);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(64 * 64 * 64 * 64 * 64), 5);
+  ASSERT_EQ(BitTreeColumn::ComputeHeight(64 * 64 * 64 * 64 * 64 + 1), -1);
 }
 
 TEST(BitTreeColumnStaticFunctionTest, ComputeDataSize) {
   using namespace mphhc;
 
-  ASSERT_EQ(bit_tree_column::compute_data_size(1, 64), 1);
-  ASSERT_EQ(bit_tree_column::compute_data_size(2, 65), 3);
-  ASSERT_EQ(bit_tree_column::compute_data_size(2, 128), 3);
-  ASSERT_EQ(bit_tree_column::compute_data_size(2, 191), 4);
-  ASSERT_EQ(bit_tree_column::compute_data_size(5, 64 * 64 * 64 * 64 * 63),
+  ASSERT_EQ(BitTreeColumn::ComputeDataSize(1, 64), 1);
+  ASSERT_EQ(BitTreeColumn::ComputeDataSize(2, 65), 3);
+  ASSERT_EQ(BitTreeColumn::ComputeDataSize(2, 128), 3);
+  ASSERT_EQ(BitTreeColumn::ComputeDataSize(2, 191), 4);
+  ASSERT_EQ(BitTreeColumn::ComputeDataSize(5, 64 * 64 * 64 * 64 * 63),
             1 + 64 + (64 * 64) + (64 * 64 * 64) + (64 * 64 * 64 * 63));
 }
 
@@ -63,161 +63,160 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(BitTreeColumnTest, SetAndMax) {
   using namespace mphhc;
   BitTreeColumnTestParams const &p = GetParam();
-  bit_tree_column column(p.num_simplices);
+  BitTreeColumn column(p.num_simplices);
 
-  ASSERT_EQ(column.max(), -1);
+  ASSERT_EQ(column.Max(), -1);
 
-  column.set(29);
-  column.set(17);
-  ASSERT_EQ(column.max(), 29);
+  column.Set(29);
+  column.Set(17);
+  ASSERT_EQ(column.Max(), 29);
 
   if (p.num_simplices > 64 * 64) {
-    column.set(64 * 64 + 34);
-    column.set(64 * 64 + 127);
-    column.set(64 + 130);
-    ASSERT_EQ(column.max(), 64 * 64 + 127);
+    column.Set(64 * 64 + 34);
+    column.Set(64 * 64 + 127);
+    column.Set(64 + 130);
+    ASSERT_EQ(column.Max(), 64 * 64 + 127);
   }
 }
 
 TEST_P(BitTreeColumnTest, Set) {
   using namespace mphhc;
-  using C = mphhc::column;
+  using C = mphhc::Column;
 
   BitTreeColumnTestParams const &p = GetParam();
-  bit_tree_column column(p.num_simplices);
+  BitTreeColumn column(p.num_simplices);
 
-  ASSERT_EQ(column.debug_export_column(), (C{}));
-  column.set(29);
-  column.set(63);
-  column.set(17);
-  ASSERT_EQ(column.debug_export_column(), (C{17, 29, 63}));
+  ASSERT_EQ(column.DebugExportColumn(), (C{}));
+  column.Set(29);
+  column.Set(63);
+  column.Set(17);
+  ASSERT_EQ(column.DebugExportColumn(), (C{17, 29, 63}));
 
   if (p.num_simplices <= 64) return;
 
-  column.set((32 << 6) + 12);
-  column.set((32 << 6) + 191);
-  ASSERT_EQ(column.debug_export_column(),
+  column.Set((32 << 6) + 12);
+  column.Set((32 << 6) + 191);
+  ASSERT_EQ(column.DebugExportColumn(),
             (C{17, 29, 63, (32 << 6) + 12, (32 << 6) + 191}));
 }
 
 TEST_P(BitTreeColumnTest, SetXor) {
   using namespace mphhc;
-  using C = mphhc::column;
+  using C = mphhc::Column;
 
   BitTreeColumnTestParams const &p = GetParam();
-  bit_tree_column column(p.num_simplices);
+  BitTreeColumn column(p.num_simplices);
 
-  column.set_xor(29);
-  ASSERT_EQ(column.debug_export_column(), (C{29}));
-  column.set_xor(17);
-  ASSERT_EQ(column.debug_export_column(), (C{17, 29}));
+  column.SetXor(29);
+  ASSERT_EQ(column.DebugExportColumn(), (C{29}));
+  column.SetXor(17);
+  ASSERT_EQ(column.DebugExportColumn(), (C{17, 29}));
 
-  column.set_xor(29);
-  ASSERT_EQ(column.debug_export_column(), (C{17}));
+  column.SetXor(29);
+  ASSERT_EQ(column.DebugExportColumn(), (C{17}));
 
-  column.set_xor(17);
-  ASSERT_EQ(column.debug_export_column(), (C{}));
+  column.SetXor(17);
+  ASSERT_EQ(column.DebugExportColumn(), (C{}));
 
   if (p.num_simplices > 64 * 64) {
-    column.set_xor(17);
-    ASSERT_EQ(column.debug_export_column(), (C{17}));
+    column.SetXor(17);
+    ASSERT_EQ(column.DebugExportColumn(), (C{17}));
 
-    column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
+    column.SetXor(64 * 64 + 21);
+    ASSERT_EQ(column.DebugExportColumn(), (C{17, 64 * 64 + 21}));
 
-    column.set_xor(64 * 32 + 31);
-    ASSERT_EQ(column.debug_export_column(),
-              (C{17, 64 * 32 + 31, 64 * 64 + 21}));
-    column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.debug_export_column(),
+    column.SetXor(64 * 32 + 31);
+    ASSERT_EQ(column.DebugExportColumn(), (C{17, 64 * 32 + 31, 64 * 64 + 21}));
+    column.SetXor(64 * 64 + 191);
+    ASSERT_EQ(column.DebugExportColumn(),
               (C{17, 64 * 32 + 31, 64 * 64 + 21, 64 * 64 + 191}));
-    column.set_xor(64 * 32 + 31);
-    column.set_xor(64 * 64 + 191);
-    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 21}));
+    column.SetXor(64 * 32 + 31);
+    column.SetXor(64 * 64 + 191);
+    ASSERT_EQ(column.DebugExportColumn(), (C{17, 64 * 64 + 21}));
 
-    column.set_xor(64 * 64 + 20);
-    column.set_xor(64 * 64 + 21);
-    ASSERT_EQ(column.debug_export_column(), (C{17, 64 * 64 + 20}));
+    column.SetXor(64 * 64 + 20);
+    column.SetXor(64 * 64 + 21);
+    ASSERT_EQ(column.DebugExportColumn(), (C{17, 64 * 64 + 20}));
 
-    column.set_xor(64 * 64 + 20);
-    column.set_xor(17);
-    ASSERT_EQ(column.debug_export_column(), (C{}));
+    column.SetXor(64 * 64 + 20);
+    column.SetXor(17);
+    ASSERT_EQ(column.DebugExportColumn(), (C{}));
   }
 }
 
 using rng = std::minstd_rand0;
 
-column generate_random_column(rng *rng, int num_simplices, int num_samples) {
-  std::set<mphhc::index> indices;
+Column generate_random_column(rng *rng, int num_simplices, int num_samples) {
+  std::set<mphhc::Index> indices;
   std::uniform_int_distribution<> dist(0, num_simplices - 1);
 
   for (int i = 0; i < num_samples; ++i) {
     indices.insert(dist(*rng));
   }
 
-  column column(indices.begin(), indices.end());
+  Column column(indices.begin(), indices.end());
   return column;
 }
 
 TEST_P(BitTreeColumnTest, ImportColumnAndExportColumn) {
   BitTreeColumnTestParams const &p = GetParam();
   std::minstd_rand0 rng(7438911);
-  column column = generate_random_column(&rng, p.num_simplices, 400);
-  bit_tree_column bt_column(p.num_simplices);
+  Column column = generate_random_column(&rng, p.num_simplices, 400);
+  BitTreeColumn bt_column(p.num_simplices);
 
-  bt_column.import_column(column);
-  ASSERT_EQ(bt_column.debug_export_column(), column);
+  bt_column.ImportColumn(column);
+  ASSERT_EQ(bt_column.DebugExportColumn(), column);
 }
 
 TEST_P(BitTreeColumnTest, ExportAndClearColumn) {
   BitTreeColumnTestParams const &p = GetParam();
   std::minstd_rand0 rng(7438911);
-  column random_column = generate_random_column(&rng, p.num_simplices, 400);
-  bit_tree_column bt_column(p.num_simplices);
-  column exported_column;
+  Column random_column = generate_random_column(&rng, p.num_simplices, 400);
+  BitTreeColumn bt_column(p.num_simplices);
+  Column exported_column;
 
-  bt_column.import_column(random_column);
-  bt_column.export_and_clear_column(&exported_column);
+  bt_column.ImportColumn(random_column);
+  bt_column.ExportAndClearColumn(&exported_column);
   ASSERT_EQ(exported_column, random_column);
-  ASSERT_TRUE(bt_column.none());
+  ASSERT_TRUE(bt_column.None());
 }
 
 TEST_P(BitTreeColumnTest, Add) {
   BitTreeColumnTestParams const &p = GetParam();
   std::minstd_rand0 rng(7438911);
 
-  column column_1 = generate_random_column(&rng, p.num_simplices, 400);
-  column column_2 = generate_random_column(&rng, p.num_simplices, 400);
-  column expected;
+  Column column_1 = generate_random_column(&rng, p.num_simplices, 400);
+  Column column_2 = generate_random_column(&rng, p.num_simplices, 400);
+  Column expected;
   std::set_symmetric_difference(column_1.begin(), column_1.end(),
                                 column_2.begin(), column_2.end(),
                                 std::back_inserter(expected));
-  bit_tree_column bt_column(p.num_simplices);
-  bt_column.import_column(column_1);
-  bt_column.add(column_2);
+  BitTreeColumn bt_column(p.num_simplices);
+  bt_column.ImportColumn(column_1);
+  bt_column.Add(column_2);
 
-  ASSERT_EQ(bt_column.debug_export_column(), expected);
+  ASSERT_EQ(bt_column.DebugExportColumn(), expected);
 }
 
 TEST(BoundaryMatrixTest, ReduceStandard) {
-  using C = mphhc::column;
-  boundary_matrix bm(2);
+  using C = mphhc::Column;
+  BoundaryMatrix bm(2);
 
-  bm.set_dim_col(0, 0, C{});
-  bm.set_dim_col(1, 0, C{});
-  bm.set_dim_col(2, 1, C{0, 1});
-  bm.set_dim_col(3, 0, C{});
-  bm.set_dim_col(4, 0, C{});
-  bm.set_dim_col(5, 1, C{3, 4});
-  bm.set_dim_col(6, 1, C{1, 3});
-  bm.set_dim_col(7, 1, C{0, 4});
-  bm.set_dim_col(8, 1, C{1, 4});
-  bm.set_dim_col(9, 2, C{5, 6, 8});
-  bm.set_dim_col(10, 2, C{2, 7, 8});
-  bm.reduce_standard();
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{0, 1});
+  bm.SetMimCol(3, 0, C{});
+  bm.SetMimCol(4, 0, C{});
+  bm.SetMimCol(5, 1, C{3, 4});
+  bm.SetMimCol(6, 1, C{1, 3});
+  bm.SetMimCol(7, 1, C{0, 4});
+  bm.SetMimCol(8, 1, C{1, 4});
+  bm.SetMimCol(9, 2, C{5, 6, 8});
+  bm.SetMimCol(10, 2, C{2, 7, 8});
+  bm.ReduceStandard();
 
-  std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
-  std::vector<birth_death_pair> expected = {
+  std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
+  std::vector<BirthDeathPair> expected = {
       {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
 
@@ -227,24 +226,24 @@ TEST(BoundaryMatrixTest, ReduceStandard) {
 }
 
 TEST(BoundaryMatrixTest, ReduceTwist) {
-  using C = mphhc::column;
-  boundary_matrix bm(2);
+  using C = mphhc::Column;
+  BoundaryMatrix bm(2);
 
-  bm.set_dim_col(0, 0, C{});
-  bm.set_dim_col(1, 0, C{});
-  bm.set_dim_col(2, 1, C{0, 1});
-  bm.set_dim_col(3, 0, C{});
-  bm.set_dim_col(4, 0, C{});
-  bm.set_dim_col(5, 1, C{3, 4});
-  bm.set_dim_col(6, 1, C{1, 3});
-  bm.set_dim_col(7, 1, C{0, 4});
-  bm.set_dim_col(8, 1, C{1, 4});
-  bm.set_dim_col(9, 2, C{5, 6, 8});
-  bm.set_dim_col(10, 2, C{2, 7, 8});
-  bm.reduce_twist();
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{0, 1});
+  bm.SetMimCol(3, 0, C{});
+  bm.SetMimCol(4, 0, C{});
+  bm.SetMimCol(5, 1, C{3, 4});
+  bm.SetMimCol(6, 1, C{1, 3});
+  bm.SetMimCol(7, 1, C{0, 4});
+  bm.SetMimCol(8, 1, C{1, 4});
+  bm.SetMimCol(9, 2, C{5, 6, 8});
+  bm.SetMimCol(10, 2, C{2, 7, 8});
+  bm.ReduceTwist();
 
-  std::vector<birth_death_pair> pairs = bm.birth_death_pairs();
-  std::vector<birth_death_pair> expected = {
+  std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
+  std::vector<BirthDeathPair> expected = {
       {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
 
@@ -254,25 +253,25 @@ TEST(BoundaryMatrixTest, ReduceTwist) {
 }
 
 TEST(BoundaryMatrixTest, ReduceStandardWithBasis) {
-  using C = mphhc::column;
-  boundary_matrix bm(2, true);
+  using C = mphhc::Column;
+  BoundaryMatrix bm(2, true);
 
-  bm.set_dim_col(0, 0, C{});
-  bm.set_dim_col(1, 0, C{});
-  bm.set_dim_col(2, 1, C{0, 1});
-  bm.set_dim_col(3, 0, C{});
-  bm.set_dim_col(4, 0, C{});
-  bm.set_dim_col(5, 1, C{3, 4});
-  bm.set_dim_col(6, 1, C{1, 3});
-  bm.set_dim_col(7, 1, C{0, 4});
-  bm.set_dim_col(8, 1, C{1, 4});
-  bm.set_dim_col(9, 2, C{5, 6, 8});
-  bm.set_dim_col(10, 2, C{2, 7, 8});
-  bm.reduce_standard();
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{0, 1});
+  bm.SetMimCol(3, 0, C{});
+  bm.SetMimCol(4, 0, C{});
+  bm.SetMimCol(5, 1, C{3, 4});
+  bm.SetMimCol(6, 1, C{1, 3});
+  bm.SetMimCol(7, 1, C{0, 4});
+  bm.SetMimCol(8, 1, C{1, 4});
+  bm.SetMimCol(9, 2, C{5, 6, 8});
+  bm.SetMimCol(10, 2, C{2, 7, 8});
+  bm.ReduceStandard();
 
-  auto basis = bm.basis();
+  auto basis = bm.Basis();
 
-  std::vector<column> expected = {
+  std::vector<Column> expected = {
       C{0}, C{1},          C{2},       C{3}, C{4},     C{5},
       C{6}, C{2, 5, 6, 7}, C{5, 6, 8}, C{9}, C{9, 10},
   };

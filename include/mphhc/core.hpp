@@ -7,77 +7,74 @@
 
 namespace mphhc {
 
-std::string get_version();
+std::string GetVersion();
 
-using index = int32_t;
-using column = std::vector<index>;
-struct birth_death_pair {
+using Index = int32_t;
+using Column = std::vector<Index>;
+struct BirthDeathPair {
   int dim;
-  index birth, death;
+  Index birth, death;
 
-  birth_death_pair(int dim, index birth, index death);
-  bool operator==(const birth_death_pair&) const;
-  bool operator<(const birth_death_pair&) const;
-  friend void PrintTo(const birth_death_pair& pair, std::ostream* os);
+  BirthDeathPair(int dim, Index birth, Index death);
+  bool operator==(const BirthDeathPair&) const;
+  bool operator<(const BirthDeathPair&) const;
+  friend void PrintTo(const BirthDeathPair& pair, std::ostream* os);
 };
 
-class boundary_matrix {
-  using local_index = int32_t;
-
-  struct index_info {
+class BoundaryMatrix {
+  struct IndexInfo {
     int dim;
-    local_index nth;
+    Index nth;
   };
 
-  std::vector<std::vector<column>> columns_;
-  std::vector<std::vector<column>> basis_;
-  std::vector<std::vector<index>> local_to_global_index_;
-  std::vector<index_info> global_to_local_index_;
+  std::vector<std::vector<Column>> columns_;
+  std::vector<std::vector<Column>> basis_;
+  std::vector<std::vector<Index>> local_to_global_index_;
+  std::vector<IndexInfo> global_to_local_index_;
   bool reduced_;
   bool save_basis_;
 
-  inline void record_pivot_twist(int d, int i,
-                                 std::vector<index>& pivot_table) {
-    index L = columns_[d][i].back();
+  inline void RecordPivotTwist(int d, int i, std::vector<Index>& pivot_table) {
+    Index L = columns_[d][i].back();
     pivot_table[L] = i;
     columns_[d - 1][L].clear();
   }
 
  public:
-  boundary_matrix(int maxdim, bool save_basis = false);
-  int max_dim() const;
-  index set_dim_col(index i, int dim, column&& col);
-  index set_dim_col(index i, int dim, const column& col);
-  int num_simplices() const;
-  bool is_reduced() const;
-  bool is_save_basis() const;
+  BoundaryMatrix(int maxdim, bool save_basis = false);
+  int MaxDim() const;
+  Index SetMimCol(Index i, int dim, Column&& col);
+  Index SetDimCol(Index i, int dim, const Column& col);
+  int NumSimplices() const;
+  bool IsReduced() const;
+  bool IsSaveBasis() const;
 
-  void reduce_standard();
-  void reduce_twist();
-  std::vector<birth_death_pair> birth_death_pairs() const;
-  std::vector<column> basis() const;
+  void ReduceStandard();
+  void ReduceTwist();
+  std::vector<BirthDeathPair> BirthDeathPairs() const;
+  std::vector<Column> Basis() const;
 };
 
-class bitset64 {
+class Bitset64 {
  public:
   uint64_t data;
 
-  inline bitset64() : data(0ull) {}
+  inline Bitset64() : data(0ull) {}
 
-  inline void clear() { data = 0ull; }
-  inline void flip(int pos) { data ^= (1ull << pos); }
-  inline void set(int pos) { data |= (1ull << pos); }
+  inline void Clear() { data = 0ull; }
+  inline void Flip(int pos) { data ^= (1ull << pos); }
+  inline void Set(int pos) { data |= (1ull << pos); }
 
-  inline bool test(int pos) const { return (1ull << pos) & data; }
-  inline bool none() const { return data == 0ull; }
-  inline bool any() const { return data != 0ull; }
-  inline int max() const {
+  inline bool Test(int pos) const { return (1ull << pos) & data; }
+  inline bool None() const { return data == 0ull; }
+  inline bool Any() const { return data != 0ull; }
+  inline int Max() const {
     return static_cast<int>(boost::core::bit_width(data)) - 1;
   }
-  inline int min() const { return boost::core::countr_zero(data); }
+  inline int Min() const { return boost::core::countr_zero(data); }
 };
 
-class bit_tree_column {
+class BitTreeColumn {
   static const uint64_t MASK = (1 << 6) - 1;
 
   static constexpr int NODE_BLOCK_SIZE_TABLE[6] = {
@@ -88,83 +85,83 @@ class bit_tree_column {
       1 + (1 << 6) + (1 << 12),
       1 + (1 << 6) + (1 << 12) + (1 << 18)};
 
-  std::vector<bitset64> data_;
+  std::vector<Bitset64> data_;
   int num_index_;
   int height_;
   int node_block_size_;
 
-  void retrieve(int h, int r, int i, std::vector<index>* indices) const;
+  void Retrieve(int h, int r, int i, std::vector<Index>* indices) const;
 
  public:
-  static int compute_height(int num_index);
-  static int compute_data_size(int height, int num_level);
+  static int ComputeHeight(int num_index);
+  static int ComputeDataSize(int height, int num_level);
 
-  explicit bit_tree_column(int num_index);
-  void import_column(const column& vec);
+  explicit BitTreeColumn(int num_index);
+  void ImportColumn(const Column& vec);
 
-  inline void set_nodes(index i, int r) {
+  inline void SetNodes(Index i, int r) {
     for (int h = 1; h <= height_ - 1; ++h) {
       r = (r - 1) >> 6;
       int k = (i >> (6 * h)) & MASK;
-      if (data_[r].test(k))
+      if (data_[r].Test(k))
         return;
       else
-        data_[r].set(k);
+        data_[r].Set(k);
     }
   }
 
-  inline void set(index i) {
+  inline void Set(Index i) {
     int r = (i >> 6) + node_block_size_;
     int k = i & MASK;
-    data_[r].set(k);
-    set_nodes(i, r);
+    data_[r].Set(k);
+    SetNodes(i, r);
   }
 
-  inline void unset_nodes(index i, int r) {
+  inline void UnsetNodes(Index i, int r) {
     for (int h = 1; h <= height_ - 1; ++h) {
-      if (data_[r].any()) return;
+      if (data_[r].Any()) return;
       r = (r - 1) >> 6;
       int k = (i >> (6 * h)) & MASK;
-      data_[r].flip(k);
+      data_[r].Flip(k);
     }
   }
 
-  inline void set_xor(index i) {
+  inline void SetXor(Index i) {
     int r = (i >> 6) + node_block_size_;
     int k = i & MASK;
-    data_[r].flip(k);
+    data_[r].Flip(k);
 
-    if (data_[r].test(k)) {
-      set_nodes(i, r);
+    if (data_[r].Test(k)) {
+      SetNodes(i, r);
     } else {
-      unset_nodes(i, r);
+      UnsetNodes(i, r);
     }
   }
 
-  inline index max() const {
+  inline Index Max() const {
     using boost::core::bit_width;
 
-    if (data_[0].none()) return -1;
+    if (data_[0].None()) return -1;
 
     int r = 0;
-    index i = 0;
+    Index i = 0;
 
     for (int h = height_ - 1; h >= 1; --h) {
-      int k = data_[r].max();
+      int k = data_[r].Max();
       r = (r << 6) + k + 1;
       i = (i << 6) + k;
     }
-    return (i << 6) + data_[r].max();
+    return (i << 6) + data_[r].Max();
   }
 
-  inline bool none() const { return data_[0].none(); }
+  inline bool None() const { return data_[0].None(); }
 
-  inline void add(const column& other) {
-    for (index i : other) set_xor(i);
+  inline void Add(const Column& other) {
+    for (Index i : other) SetXor(i);
   }
 
-  column debug_export_column();
-  void export_and_clear_column(column* col);
+  Column DebugExportColumn();
+  void ExportAndClearColumn(Column* col);
 };
 
 }  // namespace mphhc

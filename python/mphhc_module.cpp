@@ -7,20 +7,20 @@
 
 #include "mphhc/core.hpp"
 
-// --- mphhc.get_version() ---
+// --- mphhc.GetVersion() ---
 
 static PyObject* mphhc_get_version(PyObject* self, PyObject* args) {
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
   }
-  std::string version = mphhc::get_version();
+  std::string version = mphhc::GetVersion();
   return PyUnicode_FromString(version.c_str());
 }
 
-// --- mphhc.boundary_matrix class ---
+// --- mphhc.BoundaryMatrix class ---
 
 typedef struct {
-  PyObject_HEAD mphhc::boundary_matrix* bm;
+  PyObject_HEAD mphhc::BoundaryMatrix* bm;
 } MatrixObject;
 
 static void Matrix_dealloc(MatrixObject* self) {
@@ -50,7 +50,7 @@ static int Matrix_init(MatrixObject* self, PyObject* args, PyObject* kwds) {
     return -1;
   }
   try {
-    self->bm = new mphhc::boundary_matrix(maxdim, save_basis);
+    self->bm = new mphhc::BoundaryMatrix(maxdim, save_basis);
   } catch (...) {
     PyErr_SetString(PyExc_RuntimeError,
                     "Failed to create boundary_matrix instance");
@@ -67,19 +67,19 @@ static bool ensure_bm_initialized(MatrixObject* self) {
   return true;
 }
 
-static PyObject* Matrix_max_dim(MatrixObject* self, PyObject* args) {
+static PyObject* Matrix_MaxDim(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  return PyLong_FromLong(self->bm->max_dim());
+  return PyLong_FromLong(self->bm->MaxDim());
 }
 
 static PyObject* Matrix_num_simplices(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  return PyLong_FromLong(self->bm->num_simplices());
+  return PyLong_FromLong(self->bm->NumSimplices());
 }
 
 static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  if (self->bm->is_reduced()) {
+  if (self->bm->IsReduced()) {
     Py_RETURN_TRUE;
   } else {
     Py_RETURN_FALSE;
@@ -88,7 +88,7 @@ static PyObject* Matrix_is_reduced(MatrixObject* self, PyObject* args) {
 
 static PyObject* Matrix_is_save_basis(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  if (self->bm->is_save_basis()) {
+  if (self->bm->IsSaveBasis()) {
     Py_RETURN_TRUE;
   } else {
     Py_RETURN_FALSE;
@@ -98,14 +98,14 @@ static PyObject* Matrix_is_save_basis(MatrixObject* self, PyObject* args) {
 static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
 
-  mphhc::index idx;
+  int idx;
   int dim;
   PyObject* col_obj;
   if (!PyArg_ParseTuple(args, "iiO", &idx, &dim, &col_obj)) {
     return NULL;
   }
 
-  if (idx != self->bm->num_simplices()) {
+  if (idx != self->bm->NumSimplices()) {
     PyErr_SetString(PyExc_TypeError, "index must be an incremental integer");
     return NULL;
   }
@@ -115,7 +115,7 @@ static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
     return NULL;
   }
 
-  mphhc::column col;
+  mphhc::Column col;
   Py_ssize_t len = PySequence_Size(col_obj);
   col.reserve(len);
 
@@ -129,37 +129,37 @@ static PyObject* Matrix_set_dim_col(MatrixObject* self, PyObject* args) {
       PyErr_SetString(PyExc_TypeError, "column elements must be integers");
       return NULL;
     }
-    col.push_back((mphhc::index)PyLong_AsLong(item));
+    col.push_back((mphhc::Index)PyLong_AsLong(item));
     Py_DECREF(item);
   }
 
-  self->bm->set_dim_col(idx, dim, col);
+  self->bm->SetDimCol(idx, dim, col);
   return PyLong_FromLong(idx);
 }
 
 static PyObject* Matrix_reduce_standard(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  self->bm->reduce_standard();
+  self->bm->ReduceStandard();
   Py_RETURN_NONE;
 }
 
 static PyObject* Matrix_reduce_twist(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
-  self->bm->reduce_twist();
+  self->bm->ReduceTwist();
   Py_RETURN_NONE;
 }
 
 static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
 
-  if (!self->bm->is_reduced()) {
+  if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
                     "Matrix must be reduced before calling birth_death_pairs. "
                     "Call reduce_standard() or reduce_twist() first.");
     return NULL;
   }
 
-  std::vector<mphhc::birth_death_pair> pairs = self->bm->birth_death_pairs();
+  std::vector<mphhc::BirthDeathPair> pairs = self->bm->BirthDeathPairs();
 
   PyObject* list = PyList_New(pairs.size());
 
@@ -186,19 +186,19 @@ static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
 static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
 
-  if (!self->bm->is_reduced()) {
+  if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
                     "Matrix must be reduced before calling basis.");
     return NULL;
   }
 
-  if (!self->bm->is_save_basis()) {
+  if (!self->bm->IsSaveBasis()) {
     PyErr_SetString(PyExc_RuntimeError,
                     "save_basis must be True to retrieve basis.");
     return NULL;
   }
 
-  std::vector<mphhc::column> basis = self->bm->basis();
+  std::vector<mphhc::Column> basis = self->bm->Basis();
 
   PyObject* list = PyList_New(basis.size());
   if (!list) return NULL;
@@ -224,8 +224,7 @@ static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
 }
 
 static PyMethodDef Matrix_methods[] = {
-    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS,
-     "Return max dimension"},
+    {"MaxDim", (PyCFunction)Matrix_MaxDim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS,
      "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS,
