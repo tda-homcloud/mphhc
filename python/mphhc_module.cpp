@@ -67,7 +67,7 @@ static bool ensure_bm_initialized(MatrixObject* self) {
   return true;
 }
 
-static PyObject* Matrix_MaxDim(MatrixObject* self, PyObject* args) {
+static PyObject* Matrix_max_dim(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
   return PyLong_FromLong(self->bm->MaxDim());
 }
@@ -224,7 +224,7 @@ static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
 }
 
 static PyMethodDef Matrix_methods[] = {
-    {"MaxDim", (PyCFunction)Matrix_MaxDim, METH_NOARGS, "Return max dimension"},
+    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS,
      "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS,
