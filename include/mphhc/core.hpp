@@ -63,7 +63,7 @@ class Bitset64 {
 
   inline void Clear() { data = 0ull; }
   inline void Flip(int pos) { data ^= (1ull << pos); }
-  inline void Unset(int pos) { data &= ~(1ull << pos); }
+  inline void Reset(int pos) { data &= ~(1ull << pos); }
   inline void Set(int pos) { data |= (1ull << pos); }
 
   inline bool Test(int pos) const { return (1ull << pos) & data; }
@@ -118,12 +118,12 @@ class BitTreeColumn {
     SetNodes(i, r);
   }
 
-  inline void UnsetNodes(Index i, int r) {
+  inline void ResetNodes(Index i, int r) {
     for (int h = 1; h <= height_ - 1; ++h) {
       if (data_[r].Any()) return;
       r = (r - 1) >> 6;
       int k = (i >> (6 * h)) & MASK;
-      data_[r].Unset(k);
+      data_[r].Reset(k);
     }
   }
 
@@ -135,7 +135,7 @@ class BitTreeColumn {
     if (data_[r].Test(k)) {
       SetNodes(i, r);
     } else {
-      UnsetNodes(i, r);
+      ResetNodes(i, r);
     }
   }
 
