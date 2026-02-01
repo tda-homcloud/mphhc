@@ -2,7 +2,7 @@ import mphhc
 import pytest
 
 
-def test_Matrix_reduce():
+def test_Matrix_reduce_twist():
     bm = mphhc.Matrix(2)
     bm.set_dim_col(0, 0, [])
     bm.set_dim_col(1, 0, [])
@@ -31,6 +31,16 @@ def test_Matrix_reduce():
     ]
 
     assert sorted(pairs) == sorted(expected)
+
+
+def test_Matrix_reduce():
+    bm = mphhc.Matrix(1)
+    bm.set_dim_col(0, 0, [])
+    bm.set_dim_col(1, 0, [])
+    bm.set_dim_col(2, 1, [0, 1])
+
+    bm.reduce("mphhc-twist")
+    assert bm.is_reduced() is True
 
 
 def test_is_save_basis():

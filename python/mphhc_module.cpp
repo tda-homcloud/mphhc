@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <new>
+#include <string>
 #include <vector>
 
 #include "mphhc/core.hpp"
@@ -149,6 +150,25 @@ static PyObject* Matrix_reduce_twist(MatrixObject* self, PyObject* args) {
   Py_RETURN_NONE;
 }
 
+static PyObject* Matrix_reduce(MatrixObject* self, PyObject* args) {
+  if (!ensure_bm_initialized(self)) return NULL;
+
+  char* algorithm;
+
+  if (!PyArg_ParseTuple(args, "z", &algorithm)) return NULL;
+
+  if (algorithm == NULL || std::string(algorithm) == "mphhc-twist") {
+    self->bm->ReduceTwist();
+  } else if (std::string(algorithm) == "mphhc-standard") {
+    self->bm->ReduceStandard();
+  } else {
+    return PyErr_Format(PyExc_NotImplementedError, "Unknown algoithm: %s",
+                        algorithm);
+  }
+
+  Py_RETURN_NONE;
+}
+
 static PyObject* Matrix_birth_death_pairs(MatrixObject* self, PyObject* args) {
   if (!ensure_bm_initialized(self)) return NULL;
 
@@ -224,7 +244,8 @@ static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
 }
 
 static PyMethodDef Matrix_methods[] = {
-    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
+    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS,
+     "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS,
      "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS,
@@ -237,6 +258,7 @@ static PyMethodDef Matrix_methods[] = {
      "Perform standard reduction"},
     {"reduce_twist", (PyCFunction)Matrix_reduce_twist, METH_NOARGS,
      "Perform twist reduction"},
+    {"reduce", (PyCFunction)Matrix_reduce, METH_VARARGS, "Perform reduction"},
     {"birth_death_pairs", (PyCFunction)Matrix_birth_death_pairs, METH_NOARGS,
      "Get birth-death pairs"},
     {"basis", (PyCFunction)Matrix_basis, METH_NOARGS, "Get basis"},
