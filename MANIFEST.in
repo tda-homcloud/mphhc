@@ -1,0 +1,2 @@
+include src/core.cpp
+recursive-include include *.hpp
