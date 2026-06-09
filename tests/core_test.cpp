@@ -329,12 +329,14 @@ TEST(FlatBoundaryMatrixTest, Reduce_2) {
 
   std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
   std::vector<BirthDeathPair> expected = {
-      {0, 0, -1}, {0, 1, -1}, {0, 8, 2}, {0, 6, 3},
+      {0, 0, -1},
+      {0, 1, -1},
+      {0, 8, 2},
+      {0, 6, 3},
   };
   std::sort(pairs.begin(), pairs.end());
   std::sort(expected.begin(), expected.end());
   ASSERT_EQ(pairs, expected);
-
 }
 
 TEST(FlatBoundaryMatrixTest, Basis) {

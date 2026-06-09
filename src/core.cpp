@@ -290,8 +290,8 @@ class FlatAlgorithm {
 
   static int64_t rowsize(const std::vector<Column>& columns) {
     int64_t max = -1;
-    for (const Column& column: columns) {
-      for (Index elem: column) {
+    for (const Column& column : columns) {
+      for (Index elem : column) {
         if (elem > max) {
           max = elem;
         }
@@ -299,7 +299,7 @@ class FlatAlgorithm {
     }
     return max + 1;
   }
-  
+
  public:
   FlatAlgorithm(std::vector<Column>& columns, bool save_basis,
                 std::vector<Column>& basis)

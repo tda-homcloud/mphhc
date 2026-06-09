@@ -43,7 +43,7 @@ static PyObject *Matrix_new(PyTypeObject *type, PyObject *args,
 
 static int Matrix_init(MatrixObject *self, PyObject *args, PyObject *kwds) {
   int maxdim;
-  int save_basis = 0; // default false
+  int save_basis = 0;  // default false
   static char *kwlist[] = {(char *)"maxdim", (char *)"save_basis", NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|p", kwlist, &maxdim,
@@ -69,20 +69,17 @@ static bool ensure_bm_initialized(MatrixObject *self) {
 }
 
 static PyObject *Matrix_max_dim(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   return PyLong_FromLong(self->bm->MaxDim());
 }
 
 static PyObject *Matrix_num_simplices(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   return PyLong_FromLong(self->bm->NumSimplices());
 }
 
 static PyObject *Matrix_is_reduced(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   if (self->bm->IsReduced()) {
     Py_RETURN_TRUE;
   } else {
@@ -91,8 +88,7 @@ static PyObject *Matrix_is_reduced(MatrixObject *self, PyObject *args) {
 }
 
 static PyObject *Matrix_is_save_basis(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   if (self->bm->IsSaveBasis()) {
     Py_RETURN_TRUE;
   } else {
@@ -101,8 +97,7 @@ static PyObject *Matrix_is_save_basis(MatrixObject *self, PyObject *args) {
 }
 
 static PyObject *Matrix_set_dim_col(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
 
   int idx;
   int dim;
@@ -144,27 +139,23 @@ static PyObject *Matrix_set_dim_col(MatrixObject *self, PyObject *args) {
 }
 
 static PyObject *Matrix_reduce_standard(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   self->bm->ReduceStandard();
   Py_RETURN_NONE;
 }
 
 static PyObject *Matrix_reduce_twist(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
   self->bm->ReduceTwist();
   Py_RETURN_NONE;
 }
 
 static PyObject *Matrix_reduce(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
 
   char *algorithm;
 
-  if (!PyArg_ParseTuple(args, "z", &algorithm))
-    return NULL;
+  if (!PyArg_ParseTuple(args, "z", &algorithm)) return NULL;
 
   if (algorithm == NULL || std::string(algorithm) == "mphhc-twist") {
     self->bm->ReduceTwist();
@@ -179,8 +170,7 @@ static PyObject *Matrix_reduce(MatrixObject *self, PyObject *args) {
 }
 
 static PyObject *Matrix_birth_death_pairs(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
 
   if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -193,8 +183,7 @@ static PyObject *Matrix_birth_death_pairs(MatrixObject *self, PyObject *args) {
 
   PyObject *list = PyList_New(pairs.size());
 
-  if (!list)
-    return NULL;
+  if (!list) return NULL;
 
   for (size_t i = 0; i < pairs.size(); ++i) {
     PyObject *tuple;
@@ -208,15 +197,14 @@ static PyObject *Matrix_birth_death_pairs(MatrixObject *self, PyObject *args) {
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SetItem(list, i, tuple); // Steals reference to tuple
+    PyList_SetItem(list, i, tuple);  // Steals reference to tuple
   }
 
   return list;
 }
 
 static PyObject *Matrix_basis(MatrixObject *self, PyObject *args) {
-  if (!ensure_bm_initialized(self))
-    return NULL;
+  if (!ensure_bm_initialized(self)) return NULL;
 
   if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -233,8 +221,7 @@ static PyObject *Matrix_basis(MatrixObject *self, PyObject *args) {
   std::vector<mphhc::Column> basis = self->bm->Basis();
 
   PyObject *list = PyList_New(basis.size());
-  if (!list)
-    return NULL;
+  if (!list) return NULL;
 
   for (size_t i = 0; i < basis.size(); ++i) {
     PyObject *col_list = PyList_New(basis[i].size());
@@ -344,7 +331,7 @@ static PyObject *FlatMatrix_new(PyTypeObject *type, PyObject *args,
 static int FlatMatrix_init(FlatMatrixObject *self, PyObject *args,
                            PyObject *kwds) {
   int maxdim;
-  int save_basis = 0; // default false
+  int save_basis = 0;  // default false
   static char *kwlist[] = {(char *)"maxdim", (char *)"save_basis", NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|p", kwlist, &maxdim,
@@ -371,14 +358,12 @@ static bool ensure_flat_bm_initialized(FlatMatrixObject *self) {
 
 static PyObject *FlatMatrix_num_simplices(FlatMatrixObject *self,
                                           PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
   return PyLong_FromLong(self->bm->NumSimplices());
 }
 
 static PyObject *FlatMatrix_is_reduced(FlatMatrixObject *self, PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
   if (self->bm->IsReduced()) {
     Py_RETURN_TRUE;
   } else {
@@ -388,8 +373,7 @@ static PyObject *FlatMatrix_is_reduced(FlatMatrixObject *self, PyObject *args) {
 
 static PyObject *FlatMatrix_is_save_basis(FlatMatrixObject *self,
                                           PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
   if (self->bm->IsSaveBasis()) {
     Py_RETURN_TRUE;
   } else {
@@ -399,8 +383,7 @@ static PyObject *FlatMatrix_is_save_basis(FlatMatrixObject *self,
 
 static PyObject *FlatMatrix_set_dim_col(FlatMatrixObject *self,
                                         PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
 
   int idx;
   int dim;
@@ -442,16 +425,14 @@ static PyObject *FlatMatrix_set_dim_col(FlatMatrixObject *self,
 }
 
 static PyObject *FlatMatrix_reduce(FlatMatrixObject *self, PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
   self->bm->Reduce();
   Py_RETURN_NONE;
 }
 
 static PyObject *FlatMatrix_birth_death_pairs(FlatMatrixObject *self,
                                               PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
 
   if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -464,8 +445,7 @@ static PyObject *FlatMatrix_birth_death_pairs(FlatMatrixObject *self,
 
   PyObject *list = PyList_New(pairs.size());
 
-  if (!list)
-    return NULL;
+  if (!list) return NULL;
 
   for (size_t i = 0; i < pairs.size(); ++i) {
     PyObject *tuple;
@@ -479,15 +459,14 @@ static PyObject *FlatMatrix_birth_death_pairs(FlatMatrixObject *self,
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SetItem(list, i, tuple); // Steals reference to tuple
+    PyList_SetItem(list, i, tuple);  // Steals reference to tuple
   }
 
   return list;
 }
 
 static PyObject *FlatMatrix_basis(FlatMatrixObject *self, PyObject *args) {
-  if (!ensure_flat_bm_initialized(self))
-    return NULL;
+  if (!ensure_flat_bm_initialized(self)) return NULL;
 
   if (!self->bm->IsReduced()) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -504,8 +483,7 @@ static PyObject *FlatMatrix_basis(FlatMatrixObject *self, PyObject *args) {
   std::vector<mphhc::Column> basis = self->bm->Basis();
 
   PyObject *list = PyList_New(basis.size());
-  if (!list)
-    return NULL;
+  if (!list) return NULL;
 
   for (size_t i = 0; i < basis.size(); ++i) {
     PyObject *col_list = PyList_New(basis[i].size());
@@ -598,12 +576,10 @@ static struct PyModuleDef mphhc_module = {
 PyMODINIT_FUNC PyInit_mphhc(void) {
   PyObject *m;
 
-  if (PyType_Ready(&MatrixType) < 0)
-    return NULL;
+  if (PyType_Ready(&MatrixType) < 0) return NULL;
 
   m = PyModule_Create(&mphhc_module);
-  if (m == NULL)
-    return NULL;
+  if (m == NULL) return NULL;
 
   Py_INCREF(&MatrixType);
   if (PyModule_AddObject(m, "Matrix", (PyObject *)&MatrixType) < 0) {
@@ -612,8 +588,7 @@ PyMODINIT_FUNC PyInit_mphhc(void) {
     return NULL;
   }
 
-  if (PyType_Ready(&FlatMatrixType) < 0)
-    return NULL;
+  if (PyType_Ready(&FlatMatrixType) < 0) return NULL;
   Py_INCREF(&FlatMatrixType);
   if (PyModule_AddObject(m, "FlatMatrix", (PyObject *)&FlatMatrixType) < 0) {
     Py_DECREF(&FlatMatrixType);
