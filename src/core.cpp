@@ -257,8 +257,7 @@ std::vector<Column> BoundaryMatrix::Basis() const {
 }
 
 FlatBoundaryMatrix::FlatBoundaryMatrix(int maxdim, bool save_basis)
-    : reduced_(false),
-      save_basis_(save_basis) {}
+    : reduced_(false), save_basis_(save_basis) {}
 
 Index FlatBoundaryMatrix::SetMimCol(Index i, int dim, Column&& col) {
   Index new_index = columns_.size();
@@ -275,9 +274,7 @@ Index FlatBoundaryMatrix::SetDimCol(Index i, int dim, const Column& col) {
   return SetMimCol(i, dim, std::move(copied_col));
 }
 
-int FlatBoundaryMatrix::NumSimplices() const {
-  return columns_.size();
-}
+int FlatBoundaryMatrix::NumSimplices() const { return columns_.size(); }
 
 bool FlatBoundaryMatrix::IsReduced() const { return reduced_; }
 
@@ -290,10 +287,9 @@ class FlatAlgorithm {
   BitTreeColumn basis_column_;
   std::vector<Column>& basis_;
   std::vector<Index> pivot_table_;
-  
+
  public:
-  FlatAlgorithm(std::vector<Column>& columns,
-                bool save_basis,
+  FlatAlgorithm(std::vector<Column>& columns, bool save_basis,
                 std::vector<Column>& basis)
       : bt_column_(columns.size()),
         columns_(columns),
@@ -313,7 +309,7 @@ class FlatAlgorithm {
       basis_column_.ExportAndClearColumn(&basis_.back());
     }
   }
-  
+
   inline bool IsReduced(Index i) const {
     return pivot_table_[columns_[i].back()] == -1;
   }
@@ -325,8 +321,8 @@ class FlatAlgorithm {
   inline void InitBasisColumn(int i) {
     if (save_basis_) basis_column_.Set(i);
   }
-  
-  void Run () {
+
+  void Run() {
     for (Index i = 0; i < columns_.size(); ++i) {
       if (columns_[i].empty()) {
         RecordSimpleBasisVector(i);
@@ -341,16 +337,18 @@ class FlatAlgorithm {
 
       bt_column_.ImportColumn(columns_[i]);
       InitBasisColumn(i);
-      
+
       Index m, mx;
       while ((mx = bt_column_.Max()) != -1 && (m = pivot_table_[mx]) != -1) {
         bt_column_.Add(columns_[m]);
-        if (save_basis_) { basis_column_.Add(basis_[m]); }
+        if (save_basis_) {
+          basis_column_.Add(basis_[m]);
+        }
       }
 
       bt_column_.ExportAndClearColumn(&columns_[i]);
       RecordBasisVector();
-      
+
       if (!columns_[i].empty()) {
         RecordPivot(i);
       }

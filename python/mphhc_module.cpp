@@ -224,7 +224,8 @@ static PyObject* Matrix_basis(MatrixObject* self, PyObject* args) {
 }
 
 static PyMethodDef Matrix_methods[] = {
-    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS, "Return max dimension"},
+    {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS,
+     "Return max dimension"},
     {"num_simplices", (PyCFunction)Matrix_num_simplices, METH_NOARGS,
      "Return number of simplices"},
     {"is_reduced", (PyCFunction)Matrix_is_reduced, METH_NOARGS,

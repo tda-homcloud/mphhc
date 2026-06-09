@@ -333,7 +333,7 @@ TEST(FlatBoundaryMatrixTest, Basis) {
   bm.SetMimCol(9, 2, C{5, 6, 8});
   bm.SetMimCol(10, 2, C{2, 7, 8});
   bm.Reduce();
-  
+
   auto basis = bm.Basis();
 
   std::vector<Column> expected = {
