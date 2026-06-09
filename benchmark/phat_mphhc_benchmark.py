@@ -34,16 +34,18 @@ def alpha_filtration_from_uniform_random_points(rng, n):
 
 def benchmark_alpha_filtration(repeat, num_points):
     rng = np.random.default_rng(58340232)
-    times = [[], [], [], []]
+    times = [[], [], [], [], [], []]
     for _ in range(repeat):
         index_to_simplex, simplex_to_index = (
             alpha_filtration_from_uniform_random_points(rng, num_points)
         )
         matrices = [
-            phat.Matrix(len(index_to_simplex), "none"),
+            phat.Matrix(len(index_to_simplex)),
             mphhc.Matrix(3),
             mphhc.Matrix(3),
             mphhc.Matrix(3, True),
+            mphhc.FlatMatrix(3),
+            mphhc.FlatMatrix(3, True),
         ]
         for index, simplex in enumerate(index_to_simplex):
             dim = len(simplex) - 1
@@ -55,6 +57,8 @@ def benchmark_alpha_filtration(repeat, num_points):
         times[1].append(run(matrices[1].reduce_twist))
         times[2].append(run(matrices[2].reduce_standard))
         times[3].append(run(matrices[3].reduce_standard))
+        times[4].append(run(matrices[4].reduce))
+        times[5].append(run(matrices[5].reduce))
         # print(set(m1.birth_death_pairs()) ^ set(m2.birth_death_pairs()))
         # print(set(m1.birth_death_pairs()) ^ set(m3.birth_death_pairs()))
         # assert set(m1.birth_death_pairs()) == set(m2.birth_death_pairs())
@@ -68,6 +72,10 @@ def benchmark_alpha_filtration(repeat, num_points):
         np.mean(times[2]),
         "mphhc-standard-with-basis:",
         np.mean(times[3]),
+        "mphhc-flat:",
+        np.mean(times[4]),
+        "mphhc-flat-with-basis:",
+        np.mean(times[5]),
     )
 
 
