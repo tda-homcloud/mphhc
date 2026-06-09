@@ -317,6 +317,26 @@ TEST(FlatBoundaryMatrixTest, Reduce) {
   ASSERT_EQ(pairs, expected);
 }
 
+TEST(FlatBoundaryMatrixTest, Reduce_2) {
+  using C = mphhc::Column;
+  FlatBoundaryMatrix bm(2);
+
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{5, 8});
+  bm.SetMimCol(3, 1, C{6, 8});
+  bm.Reduce();
+
+  std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
+  std::vector<BirthDeathPair> expected = {
+      {0, 0, -1}, {0, 1, -1}, {0, 8, 2}, {0, 6, 3},
+  };
+  std::sort(pairs.begin(), pairs.end());
+  std::sort(expected.begin(), expected.end());
+  ASSERT_EQ(pairs, expected);
+
+}
+
 TEST(FlatBoundaryMatrixTest, Basis) {
   using C = mphhc::Column;
   FlatBoundaryMatrix bm(2, true);

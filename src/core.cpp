@@ -288,6 +288,18 @@ class FlatAlgorithm {
   std::vector<Column>& basis_;
   std::vector<Index> pivot_table_;
 
+  static int64_t rowsize(const std::vector<Column>& columns) {
+    int64_t max = -1;
+    for (const Column& column: columns) {
+      for (Index elem: column) {
+        if (elem > max) {
+          max = elem;
+        }
+      }
+    }
+    return max + 1;
+  }
+  
  public:
   FlatAlgorithm(std::vector<Column>& columns, bool save_basis,
                 std::vector<Column>& basis)
@@ -296,7 +308,7 @@ class FlatAlgorithm {
         save_basis_(save_basis),
         basis_column_(save_basis ? columns.size() : 0),
         basis_(basis),
-        pivot_table_(columns_.size(), -1) {}
+        pivot_table_(rowsize(columns), -1) {}
 
   inline void RecordPivot(int i) {
     Index L = columns_[i].back();
