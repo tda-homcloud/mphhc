@@ -55,6 +55,26 @@ class BoundaryMatrix {
   std::vector<Column> Basis() const;
 };
 
+class FlatBoundaryMatrix {
+  std::vector<Column> columns_;
+  std::vector<int8_t> dims_;
+  std::vector<Column> basis_;
+  bool reduced_;
+  bool save_basis_;
+
+ public:
+  FlatBoundaryMatrix(int maxdim, bool save_basis = false);
+  Index SetMimCol(Index i, int dim, Column&& col);
+  Index SetDimCol(Index i, int dim, const Column& col);
+  int NumSimplices() const;
+  bool IsReduced() const;
+  bool IsSaveBasis() const;
+
+  void Reduce();
+  std::vector<BirthDeathPair> BirthDeathPairs() const;
+  std::vector<Column> Basis() const;
+};
+
 class Bitset64 {
  public:
   uint64_t data;

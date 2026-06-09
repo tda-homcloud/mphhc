@@ -256,6 +256,140 @@ std::vector<Column> BoundaryMatrix::Basis() const {
   return ret;
 }
 
+FlatBoundaryMatrix::FlatBoundaryMatrix(int maxdim, bool save_basis)
+    : reduced_(false),
+      save_basis_(save_basis) {}
+
+Index FlatBoundaryMatrix::SetMimCol(Index i, int dim, Column&& col) {
+  Index new_index = columns_.size();
+  assert(new_index == i);
+
+  dims_.push_back(dim);
+  auto& new_column = columns_.emplace_back(col);
+  std::sort(new_column.begin(), new_column.end());
+  return new_index;
+}
+
+Index FlatBoundaryMatrix::SetDimCol(Index i, int dim, const Column& col) {
+  Column copied_col(col);
+  return SetMimCol(i, dim, std::move(copied_col));
+}
+
+int FlatBoundaryMatrix::NumSimplices() const {
+  return columns_.size();
+}
+
+bool FlatBoundaryMatrix::IsReduced() const { return reduced_; }
+
+bool FlatBoundaryMatrix::IsSaveBasis() const { return save_basis_; }
+
+class FlatAlgorithm {
+  BitTreeColumn bt_column_;
+  std::vector<Column>& columns_;
+  bool save_basis_;
+  BitTreeColumn basis_column_;
+  std::vector<Column>& basis_;
+  std::vector<Index> pivot_table_;
+  
+ public:
+  FlatAlgorithm(std::vector<Column>& columns,
+                bool save_basis,
+                std::vector<Column>& basis)
+      : bt_column_(columns.size()),
+        columns_(columns),
+        save_basis_(save_basis),
+        basis_column_(save_basis ? columns.size() : 0),
+        basis_(basis),
+        pivot_table_(columns_.size(), -1) {}
+
+  inline void RecordPivot(int i) {
+    Index L = columns_[i].back();
+    pivot_table_[L] = i;
+  }
+
+  inline void RecordBasisVector() {
+    if (save_basis_) {
+      basis_.emplace_back();
+      basis_column_.ExportAndClearColumn(&basis_.back());
+    }
+  }
+  
+  inline bool IsReduced(Index i) const {
+    return pivot_table_[columns_[i].back()] == -1;
+  }
+
+  inline void RecordSimpleBasisVector(Index i) {
+    if (save_basis_) basis_.push_back(std::vector<Index>{i});
+  }
+
+  inline void InitBasisColumn(int i) {
+    if (save_basis_) basis_column_.Set(i);
+  }
+  
+  void Run () {
+    for (Index i = 0; i < columns_.size(); ++i) {
+      if (columns_[i].empty()) {
+        RecordSimpleBasisVector(i);
+        continue;
+      }
+
+      if (IsReduced(i)) {
+        RecordPivot(i);
+        RecordSimpleBasisVector(i);
+        continue;
+      }
+
+      bt_column_.ImportColumn(columns_[i]);
+      InitBasisColumn(i);
+      
+      Index m, mx;
+      while ((mx = bt_column_.Max()) != -1 && (m = pivot_table_[mx]) != -1) {
+        bt_column_.Add(columns_[m]);
+        if (save_basis_) { basis_column_.Add(basis_[m]); }
+      }
+
+      bt_column_.ExportAndClearColumn(&columns_[i]);
+      RecordBasisVector();
+      
+      if (!columns_[i].empty()) {
+        RecordPivot(i);
+      }
+    }
+  }
+};
+
+void FlatBoundaryMatrix::Reduce() {
+  if (reduced_) return;
+
+  FlatAlgorithm algorithm(columns_, save_basis_, basis_);
+  algorithm.Run();
+
+  reduced_ = true;
+}
+
+std::vector<BirthDeathPair> FlatBoundaryMatrix::BirthDeathPairs() const {
+  assert(reduced_);
+
+  std::vector<BirthDeathPair> pairs;
+  std::vector<bool> used(NumSimplices(), false);
+
+  for (Index i = 0; i < columns_.size(); ++i) {
+    if (!columns_[i].empty()) {
+      Index birth = columns_[i].back();
+      pairs.emplace_back(dims_[i] - 1, birth, i);
+      used[birth] = used[i] = true;
+    }
+  }
+
+  for (Index i = 0; i < NumSimplices(); ++i) {
+    if (!used[i]) {
+      pairs.emplace_back(dims_[i], i, -1);
+    }
+  }
+
+  return pairs;
+}
+
 int BitTreeColumn::ComputeHeight(int num_index) {
   int64_t s;
   for (int h = 1, s = 64; h <= 5; ++h) {
@@ -263,6 +397,12 @@ int BitTreeColumn::ComputeHeight(int num_index) {
     s *= 64;
   }
   return -1;
+}
+
+std::vector<Column> FlatBoundaryMatrix::Basis() const {
+  assert(reduced_ && save_basis_);
+
+  return basis_;
 }
 
 int BitTreeColumn::ComputeDataSize(int height, int num_level) {

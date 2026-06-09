@@ -278,3 +278,68 @@ TEST(BoundaryMatrixTest, ReduceStandardWithBasis) {
 
   ASSERT_EQ(basis, expected);
 }
+
+TEST(FlatBoundaryMatrixTest, AddDimCol) {
+  using namespace mphhc;
+  FlatBoundaryMatrix boundary_matrix(2);
+
+  boundary_matrix.SetMimCol(0, 0, Column{});
+  boundary_matrix.SetMimCol(1, 0, Column{});
+  boundary_matrix.SetMimCol(2, 1, Column{0, 1});
+
+  ASSERT_EQ(boundary_matrix.NumSimplices(), 3);
+}
+
+TEST(FlatBoundaryMatrixTest, Reduce) {
+  using C = mphhc::Column;
+  FlatBoundaryMatrix bm(2);
+
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{0, 1});
+  bm.SetMimCol(3, 0, C{});
+  bm.SetMimCol(4, 0, C{});
+  bm.SetMimCol(5, 1, C{3, 4});
+  bm.SetMimCol(6, 1, C{1, 3});
+  bm.SetMimCol(7, 1, C{0, 4});
+  bm.SetMimCol(8, 1, C{1, 4});
+  bm.SetMimCol(9, 2, C{5, 6, 8});
+  bm.SetMimCol(10, 2, C{2, 7, 8});
+  bm.Reduce();
+
+  std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
+  std::vector<BirthDeathPair> expected = {
+      {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
+  };
+
+  std::sort(pairs.begin(), pairs.end());
+  std::sort(expected.begin(), expected.end());
+  ASSERT_EQ(pairs, expected);
+}
+
+TEST(FlatBoundaryMatrixTest, Basis) {
+  using C = mphhc::Column;
+  FlatBoundaryMatrix bm(2, true);
+
+  bm.SetMimCol(0, 0, C{});
+  bm.SetMimCol(1, 0, C{});
+  bm.SetMimCol(2, 1, C{0, 1});
+  bm.SetMimCol(3, 0, C{});
+  bm.SetMimCol(4, 0, C{});
+  bm.SetMimCol(5, 1, C{3, 4});
+  bm.SetMimCol(6, 1, C{1, 3});
+  bm.SetMimCol(7, 1, C{0, 4});
+  bm.SetMimCol(8, 1, C{1, 4});
+  bm.SetMimCol(9, 2, C{5, 6, 8});
+  bm.SetMimCol(10, 2, C{2, 7, 8});
+  bm.Reduce();
+  
+  auto basis = bm.Basis();
+
+  std::vector<Column> expected = {
+      C{0}, C{1},          C{2},       C{3}, C{4},     C{5},
+      C{6}, C{2, 5, 6, 7}, C{5, 6, 8}, C{9}, C{9, 10},
+  };
+
+  ASSERT_EQ(basis, expected);
+}
