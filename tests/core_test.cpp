@@ -216,13 +216,17 @@ TEST(BoundaryMatrixTest, ReduceStandard) {
   bm.ReduceStandard();
 
   std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
-  std::vector<BirthDeathPair> expected = {
+  std::vector<BirthDeathPair> pairs_expected = {
       {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
-
   std::sort(pairs.begin(), pairs.end());
-  std::sort(expected.begin(), expected.end());
-  ASSERT_EQ(pairs, expected);
+  std::sort(pairs_expected.begin(), pairs_expected.end());
+  ASSERT_EQ(pairs, pairs_expected);
+  std::vector<Index> lows = bm.Lows();
+  std::vector<Index> lows_expected = {
+    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+  };
+  ASSERT_EQ(lows, lows_expected);
 }
 
 TEST(BoundaryMatrixTest, ReduceTwist) {
@@ -243,13 +247,17 @@ TEST(BoundaryMatrixTest, ReduceTwist) {
   bm.ReduceTwist();
 
   std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
-  std::vector<BirthDeathPair> expected = {
+  std::vector<BirthDeathPair> pairs_expected = {
       {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
-
   std::sort(pairs.begin(), pairs.end());
-  std::sort(expected.begin(), expected.end());
-  ASSERT_EQ(pairs, expected);
+  std::sort(pairs_expected.begin(), pairs_expected.end());
+  ASSERT_EQ(pairs, pairs_expected);
+  std::vector<Index> lows = bm.Lows();
+  std::vector<Index> lows_expected = {
+    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+  };
+  ASSERT_EQ(lows, lows_expected);
 }
 
 TEST(BoundaryMatrixTest, ReduceStandardWithBasis) {
@@ -308,13 +316,17 @@ TEST(FlatBoundaryMatrixTest, Reduce) {
   bm.Reduce();
 
   std::vector<BirthDeathPair> pairs = bm.BirthDeathPairs();
-  std::vector<BirthDeathPair> expected = {
+  std::vector<BirthDeathPair> pairs_expected = {
       {0, 1, 2}, {0, 4, 5}, {0, 3, 6}, {1, 8, 9}, {1, 7, 10}, {0, 0, -1},
   };
-
   std::sort(pairs.begin(), pairs.end());
-  std::sort(expected.begin(), expected.end());
-  ASSERT_EQ(pairs, expected);
+  std::sort(pairs_expected.begin(), pairs_expected.end());
+  ASSERT_EQ(pairs, pairs_expected);
+  std::vector<Index> lows = bm.Lows();
+  std::vector<Index> lows_expected = {
+    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+  };
+  ASSERT_EQ(lows, lows_expected);
 }
 
 TEST(FlatBoundaryMatrixTest, Reduce_2) {

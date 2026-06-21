@@ -53,6 +53,7 @@ class BoundaryMatrix {
   void ReduceTwist();
   std::vector<BirthDeathPair> BirthDeathPairs() const;
   std::vector<Column> Basis() const;
+  std::vector<Index> Lows() const;
 };
 
 class FlatBoundaryMatrix {
@@ -73,6 +74,7 @@ class FlatBoundaryMatrix {
   void Reduce();
   std::vector<BirthDeathPair> BirthDeathPairs() const;
   std::vector<Column> Basis() const;
+  std::vector<Index> Lows() const;
 };
 
 class Bitset64 {
