@@ -24,4 +24,4 @@ format-cpp:
 	clang-format -i --style=Google src/*.cpp include/mphhc/*.hpp tests/*.cpp python/*.cpp
 
 format-python:
-	black benchmark/*.py
+	black python-tests/*.py benchmark/*.py
