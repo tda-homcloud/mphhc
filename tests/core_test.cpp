@@ -224,7 +224,7 @@ TEST(BoundaryMatrixTest, ReduceStandard) {
   ASSERT_EQ(pairs, pairs_expected);
   std::vector<Index> lows = bm.Lows();
   std::vector<Index> lows_expected = {
-    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+      -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
   };
   ASSERT_EQ(lows, lows_expected);
 }
@@ -255,7 +255,7 @@ TEST(BoundaryMatrixTest, ReduceTwist) {
   ASSERT_EQ(pairs, pairs_expected);
   std::vector<Index> lows = bm.Lows();
   std::vector<Index> lows_expected = {
-    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+      -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
   };
   ASSERT_EQ(lows, lows_expected);
 }
@@ -324,7 +324,7 @@ TEST(FlatBoundaryMatrixTest, Reduce) {
   ASSERT_EQ(pairs, pairs_expected);
   std::vector<Index> lows = bm.Lows();
   std::vector<Index> lows_expected = {
-    -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
+      -1, -1, 1, -1, -1, 4, 3, -1, -1, 8, 7,
   };
   ASSERT_EQ(lows, lows_expected);
 }

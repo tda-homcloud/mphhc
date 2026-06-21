@@ -243,6 +243,25 @@ static PyObject *Matrix_basis(MatrixObject *self, PyObject *args) {
   return list;
 }
 
+static PyObject *Matrix_lows(MatrixObject *self, PyObject *args) {
+  if (!ensure_bm_initialized(self)) return NULL;
+
+  std::vector<mphhc::Index> lows = self->bm->Lows();
+
+  PyObject *list = PyList_New(lows.size());
+  if (!list) return NULL;
+
+  for (size_t i = 0; i < lows.size(); ++i) {
+    PyObject *val = PyLong_FromLong(lows[i]);
+    if (!val) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, val);
+  }
+  return list;
+}
+
 static PyMethodDef Matrix_methods[] = {
     {"max_dim", (PyCFunction)Matrix_max_dim, METH_NOARGS,
      "Return max dimension"},
@@ -262,6 +281,7 @@ static PyMethodDef Matrix_methods[] = {
     {"birth_death_pairs", (PyCFunction)Matrix_birth_death_pairs, METH_NOARGS,
      "Get birth-death pairs"},
     {"basis", (PyCFunction)Matrix_basis, METH_NOARGS, "Get basis"},
+    {"lows", (PyCFunction)Matrix_lows, METH_NOARGS, "Get lows"},
     {NULL} /* Sentinel */
 };
 
@@ -505,6 +525,25 @@ static PyObject *FlatMatrix_basis(FlatMatrixObject *self, PyObject *args) {
   return list;
 }
 
+static PyObject *FlatMatrix_lows(FlatMatrixObject *self, PyObject *args) {
+  if (!ensure_flat_bm_initialized(self)) return NULL;
+
+  std::vector<mphhc::Index> lows = self->bm->Lows();
+
+  PyObject *list = PyList_New(lows.size());
+  if (!list) return NULL;
+
+  for (size_t i = 0; i < lows.size(); ++i) {
+    PyObject *val = PyLong_FromLong(lows[i]);
+    if (!val) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, val);
+  }
+  return list;
+}
+
 static PyMethodDef FlatMatrix_methods[] = {
     {"num_simplices", (PyCFunction)FlatMatrix_num_simplices, METH_NOARGS,
      "Return number of simplices"},
@@ -519,6 +558,7 @@ static PyMethodDef FlatMatrix_methods[] = {
     {"birth_death_pairs", (PyCFunction)FlatMatrix_birth_death_pairs,
      METH_NOARGS, "Get birth-death pairs"},
     {"basis", (PyCFunction)FlatMatrix_basis, METH_NOARGS, "Get basis"},
+    {"lows", (PyCFunction)FlatMatrix_lows, METH_NOARGS, "Get lows"},
     {NULL} /* Sentinel */
 };
 
